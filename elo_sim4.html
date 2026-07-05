@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>Elo / Glicko / Glicko-2 シミュレーション（行レイアウト）</title>
+  <title>Elo / Glicko / Glicko-2 シミュレーション（仮）</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{--gap:12px;--card-bg:#fff;--muted:#666;}
@@ -30,7 +30,12 @@
 </head>
 <body>
   <h1>Elo / Glicko / Glicko-2 シミュレーション</h1>
-  <p class="small">方式選択に応じて表示が切り替わります（Glicko-2はデバッグ中）。</p>
+  方式を選択して、レート等の情報を入れて [計算する] ボタンを押してください。下部の [P1 Δ] の欄にレート増減値が表示されます。
+  <p class="small">Elo     :シンプルなレーティングモデルです。Kは20~40程度にしてください。Kは最大のレート増減値を意味します。</p>
+  <p class="small">Glicko  :Eloを改良したレーティングモデルです。RD(※1)は160(1試合後), 110(10試合後), 75(30試合後), 50(100試合後)程度にしてください（目安）。</p>
+  <p class="small">Glicko-2:Glickoを改良したレーティングモデルです。RDはGlickoと同じくらいで(※2)、σは0.06、τは0.3~1.2程度(標準0.5)にしてください。</p>
+  <p class="small">　※1)RD値とは、レートの不確かさを表す量です。Glickoでは概ねレーティングが始まってからの試合数に応じて減少していきます。</p>
+  <p class="small">　※2)Glicko-2のRD値は基本は試合数で減少していきますが、直近の成績で変動するので調整が難しいです。番狂わせな試合結果があるとRDは増加します。</p>
 
   <div class="card" role="region" aria-label="Rating simulator">
 
@@ -111,7 +116,7 @@
 
     <!-- 出力 -->
     <div id="output" class="result" aria-live="polite" style="display:none;"></div>
-
+    <p class="small">結果はあくまで参考値としてください。</p>
   </div>
 
   <script>
