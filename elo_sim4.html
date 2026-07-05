@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Elo / Glicko / Glicko-2 シミュレーション（行レイアウト）</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--gap:12px;--card-bg:#fff;--muted:#666;}
+    body{font-family:system-ui, -apple-system, "Hiragino Kaku Gothic ProN","メイリオ",sans-serif;max-width:920px;margin:28px auto;padding:18px;color:#111;background:#fbfbfd;}
+    h1{font-size:1.25rem;margin:0 0 10px 0;}
+    .card{background:var(--card-bg);border:1px solid #e6e6e6;padding:16px;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);}
+    .row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px dashed #f0f0f0;}
+    .row:last-child{border-bottom:none;}
+    .label{width:160px;font-weight:700;}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;}
+    input[type="number"], select{padding:8px;border:1px solid #ccc;border-radius:6px;background:#fff;min-width:160px;}
+    .small{font-size:0.9rem;color:var(--muted);}
+    button{background:#0066cc;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;}
+    button.secondary{background:#f0f0f0;color:#111;border:1px solid #ddd;}
+    .result{margin-top:14px;padding:12px;border-radius:8px;background:#f9faff;border:1px solid #e0ecff;}
+    .delta{font-weight:700;}
+    .positive{color:#0a8a3a;}
+    .negative{color:#c0392b;}
+    @media(max-width:640px){
+      .label{width:120px;font-size:0.95rem;}
+      input[type="number"], select{min-width:120px;}
+      .row{flex-direction:column;align-items:flex-start;}
+    }
+  </style>
+</head>
+<body>
+  <h1>Elo / Glicko / Glicko-2 シミュレーション</h1>
+  <p class="small">方式選択に応じて表示が切り替わります（Glicko-2はデバッグ中）。</p>
+
+  <div class="card" role="region" aria-label="Rating simulator">
+
+    <!-- 方式 -->
+    <div class="row" id="row-system">
+      <div class="label">方式</div>
+      <div>
+        <select id="system" aria-label="rating system">
+          <option value="elo">Elo</option>
+          <option value="glicko">Glicko </option>
+          <option value="glicko2">Glicko-2</option>
+        </select>
+        <div class="small" style="margin-top:6px;">方式を選ぶと関連項目が表示されます</div>
+      </div>
+    </div>
+
+    <!-- プレイヤー1 -->
+    <div class="row" id="row-player1">
+      <div class="label">プレイヤー1</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <label class="small" style="margin-right:6px;">レート</label>
+        <input id="r1" type="number" value="1500" min="0" step="1" />
+        <label class="small" id="rd1Label" style="margin-left:8px;display:none;">RD</label>
+        <input id="rd1" type="number" value="75" min="1" step="0.1" style="display:none;min-width:100px;" />
+        <label class="small" id="sigma1Label" style="margin-left:8px;display:none;">σ</label>
+        <input id="sigma1" type="number" value="0.06" min="0.0001" step="0.01" style="display:none;min-width:100px;" />
+      </div>
+    </div>
+
+    <!-- プレイヤー2 -->
+    <div class="row" id="row-player2">
+      <div class="label">プレイヤー2</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <label class="small" style="margin-right:6px;">レート</label>
+        <input id="r2" type="number" value="1500" min="0" step="1" />
+        <label class="small" id="rd2Label" style="margin-left:8px;display:none;">RD</label>
+        <input id="rd2" type="number" value="75" min="1" step="0.1" style="display:none;min-width:100px;" />
+        <label class="small" id="sigma2Label" style="margin-left:8px;display:none;">σ</label>
+        <input id="sigma2" type="number" value="0.06" min="0.0001" step="0.01" style="display:none;min-width:100px;" />
+      </div>
+    </div>
+
+    <!-- K / τ -->
+    <div class="row" id="row-params">
+      <div class="label">パラメータ</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div id="kContainer">
+          <label class="small">K（Elo用）</label><br />
+          <input id="k" type="number" value="32" min="1" step="1" />
+        </div>
+
+        <div id="tauContainer" style="display:none;">
+          <label class="small">τ（Glicko-2）</label><br />
+          <input id="tau" type="number" value="0.5" min="0.01" step="0.01" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 勝敗 -->
+    <div class="row" id="row-result">
+      <div class="label">勝敗</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <label style="font-weight:500;"><input type="radio" name="winner" value="1" checked /> プレイヤー1が勝ち</label>
+        <label style="font-weight:500;"><input type="radio" name="winner" value="2" /> プレイヤー2が勝ち</label>
+        <label style="font-weight:500;"><input type="radio" name="winner" value="draw" /> 引き分け</label>
+      </div>
+    </div>
+
+    <!-- 操作ボタン -->
+    <div class="row" id="row-actions" style="border-bottom:none;">
+      <div class="label">操作</div>
+      <div class="controls">
+        <button id="calcBtn">計算する</button>
+        <button id="swapBtn" class="secondary">プレイヤー入れ替え</button>
+        <button id="resetBtn" class="secondary">リセット</button>
+      </div>
+    </div>
+
+    <!-- 出力 -->
+    <div id="output" class="result" aria-live="polite" style="display:none;"></div>
+
+  </div>
+
+  <script>
+    // --- ユーティリティ ---
+    function roundTo(n, digits=2){
+      const p = Math.pow(10, digits);
+      return Math.round(n * p) / p;
+    }
+
+    // --- Elo / Glicko / Glicko-2 関数（省略せず実装） ---
+    function expectedElo(rA, rB){ return 1 / (1 + Math.pow(10, (rB - rA) / 400)); }
+    function calcElo(r1, r2, result, K){
+      const e1 = expectedElo(r1, r2), e2 = expectedElo(r2, r1);
+      let s1 = result==='1'?1:result==='draw'?0.5:0;
+      let s2 = result==='2'?1:result==='draw'?0.5:0;
+      const delta1 = K * (s1 - e1), delta2 = K * (s2 - e2);
+      return { expected1:e1, expected2:e2, delta1, delta2, newR1:r1+delta1, newR2:r2+delta2 };
+    }
+
+    // Glicko-1 (separate RD)
+    function qConst(){ return Math.log(10) / 400; }
+    function gOf(RD){ const q=qConst(); return 1 / Math.sqrt(1 + (3 * q * q * RD * RD) / (Math.PI * Math.PI)); }
+    function E_g(r, rj, RDj){ const g=gOf(RDj); return 1 / (1 + Math.pow(10, -g * (r - rj) / 400)); }
+    function calcGlickoSeparateRD(r1,r2,rd1,rd2,result){
+      const q=qConst(), g2=gOf(rd2), g1=gOf(rd1);
+      const e1=E_g(r1,r2,rd2), e2=E_g(r2,r1,rd1);
+      let s1 = result==='1'?1:result==='draw'?0.5:0;
+      let s2 = result==='2'?1:result==='draw'?0.5:0;
+      const v1 = 1 / (q*q*g2*g2*e1*(1-e1));
+      const v2 = 1 / (q*q*g1*g1*e2*(1-e2));
+      const delta1 = v1 * q * g2 * (s1 - e1);
+      const delta2 = v2 * q * g1 * (s2 - e2);
+      const rd1_new = Math.sqrt(1 / (1 / (rd1*rd1) + 1 / v1));
+      const rd2_new = Math.sqrt(1 / (1 / (rd2*rd2) + 1 / v2));
+      const denom1 = (1 / (rd1*rd1) + 1 / v1);
+      const denom2 = (1 / (rd2*rd2) + 1 / v2);
+      const newR1 = r1 + (q / denom1) * g2 * (s1 - e1);
+      const newR2 = r2 + (q / denom2) * g1 * (s2 - e2);
+      return { expected1:e1, expected2:e2, delta1, delta2, newR1, newR2, newRD1:rd1_new, newRD2:rd2_new };
+    }
+
+    // Glicko-2 (single match, separate RD/sigma/tau)
+    const G2_SCALE = 173.7178;
+    //function g2_q(){ return Math.log(10) / 400; }
+    function g2_g(phi){ return 1 / Math.sqrt(1 + 3 * phi * phi / (Math.PI * Math.PI)); }
+    function g2_E(mu, muj, phij){ const g=g2_g(phij); return 1 / (1 + Math.exp(-g * (mu - muj))); }
+
+    function updateSigma(sigma, delta, v, tau){
+      const a = Math.log(sigma*sigma);
+      const eps = 1e-6;
+      function f(x, a, delta, v, tau){
+        const ex = Math.exp(x);
+        const num = ex * (delta*delta - v - ex);
+        const den = 2 * (v + ex) * (v + ex);
+        return (num / den) - ((x - a) / (tau * tau));
+      }
+      let A = a;
+      let B;
+      if (delta*delta > v + Math.exp(a)) {
+        B = Math.log(delta*delta - v - Math.exp(a));
+      } else {
+        let k = 1;
+        while (f(a - k * Math.abs(tau), a, delta, v, tau) < 0) k++;
+        B = a - k * Math.abs(tau);
+      }
+      let fA = f(A, a, delta, v, tau);
+      let fB = f(B, a, delta, v, tau);
+      while (Math.abs(B - A) > eps) {
+        const C = A + (A - B) * fA / (fB - fA);
+        const fC = f(C, a, delta, v, tau);
+        if (fC * fB < 0) {
+          A = B; fA = fB;
+          B = C; fB = fC;
+        } else {
+          fA = fA / 2;
+          B = C; fB = fC;
+        }
+      }
+      return Math.exp(A / 2);
+    }
+
+    function calcGlicko2Separate(r1,r2,rd1,rd2,sigma1,sigma2,tau,result){
+      const mu1 = (r1 - 1500) / G2_SCALE;
+      const mu2 = (r2 - 1500) / G2_SCALE;
+      const phi1 = rd1 / G2_SCALE;
+      const phi2 = rd2 / G2_SCALE;
+      const g2 = g2_g(phi2), g1 = g2_g(phi1);
+      const E1 = g2_E(mu1, mu2, phi2), E2 = g2_E(mu2, mu1, phi1);
+      let s1 = result==='1'?1:result==='draw'?0.5:0;
+      let s2 = result==='2'?1:result==='draw'?0.5:0;
+      const v1 = 1 / (g2*g2*E1*(1-E1));
+      const v2 = 1 / (g1*g1*E2*(1-E2));
+      const delta1 = v1 * g2 * (s1 - E1);
+      const delta2 = v2 * g1 * (s2 - E2);
+      const sigma1Prime = updateSigma(sigma1, delta1, v1, tau);
+      const sigma2Prime = updateSigma(sigma2, delta2, v2, tau);
+      const phi1Star = Math.sqrt(phi1*phi1 + sigma1Prime*sigma1Prime);
+      const phi2Star = Math.sqrt(phi2*phi2 + sigma2Prime*sigma2Prime);
+      const phi1Prime = 1 / Math.sqrt((1 / (phi1Star*phi1Star)) + (1 / v1));
+      const phi2Prime = 1 / Math.sqrt((1 / (phi2Star*phi2Star)) + (1 / v2));
+      const mu1Prime = mu1 + (g2 * (s1 - E1)) / ( (1 / (phi1Star*phi1Star)) + (1 / v1) );
+      const mu2Prime = mu2 + (g1 * (s2 - E2)) / ( (1 / (phi2Star*phi2Star)) + (1 / v2) );
+      const newR1 = mu1Prime * G2_SCALE + 1500;
+      const newR2 = mu2Prime * G2_SCALE + 1500;
+      const newRD1 = phi1Prime * G2_SCALE;
+      const newRD2 = phi2Prime * G2_SCALE;
+      return {
+        expected1:E1, expected2:E2,
+        delta1:newR1 - r1, delta2:newR2 - r2,
+        newR1, newR2, newRD1, newRD2,
+        newSigma1:sigma1Prime, newSigma2:sigma2Prime
+      };
+    }
+
+    // --- DOM ---
+    const systemSelect = document.getElementById('system');
+    const kContainer = document.getElementById('kContainer');
+    const kInput = document.getElementById('k');
+    const rd1 = document.getElementById('rd1'), rd2 = document.getElementById('rd2');
+    const rd1Label = document.getElementById('rd1Label'), rd2Label = document.getElementById('rd2Label');
+    const sigma1 = document.getElementById('sigma1'), sigma2 = document.getElementById('sigma2');
+    const sigma1Label = document.getElementById('sigma1Label'), sigma2Label = document.getElementById('sigma2Label');
+    const tauContainer = document.getElementById('tauContainer'), tauInput = document.getElementById('tau');
+    const r1Input = document.getElementById('r1'), r2Input = document.getElementById('r2');
+    const calcBtn = document.getElementById('calcBtn'), swapBtn = document.getElementById('swapBtn'), resetBtn = document.getElementById('resetBtn');
+    const output = document.getElementById('output');
+
+    function updateUIForSystem(){
+      const sys = systemSelect.value;
+      if(sys === 'elo'){
+        kContainer.style.display = 'block';
+        rd1.style.display = rd2.style.display = rd1Label.style.display = rd2Label.style.display = 'none';
+        sigma1.style.display = sigma2.style.display = sigma1Label.style.display = sigma2Label.style.display = 'none';
+        tauContainer.style.display = 'none';
+      } else if(sys === 'glicko'){
+        kContainer.style.display = 'none';
+        rd1.style.display = rd2.style.display = rd1Label.style.display = rd2Label.style.display = 'inline-block';
+        sigma1.style.display = sigma2.style.display = sigma1Label.style.display = sigma2Label.style.display = 'none';
+        tauContainer.style.display = 'none';
+        if(!rd1.value || Number(rd1.value)<=0) rd1.value = 75;
+        if(!rd2.value || Number(rd2.value)<=0) rd2.value = 75;
+      } else { // glicko2
+        kContainer.style.display = 'none';
+        rd1.style.display = rd2.style.display = rd1Label.style.display = rd2Label.style.display = 'inline-block';
+        sigma1.style.display = sigma2.style.display = sigma1Label.style.display = sigma2Label.style.display = 'inline-block';
+        tauContainer.style.display = 'inline-block';
+        if(!rd1.value || Number(rd1.value)<=0) rd1.value = 75;
+        if(!rd2.value || Number(rd2.value)<=0) rd2.value = 75;
+        if(!sigma1.value || Number(sigma1.value)<=0) sigma1.value = 0.06;
+        if(!sigma2.value || Number(sigma2.value)<=0) sigma2.value = 0.06;
+        if(!tauInput.value || Number(tauInput.value)<=0) tauInput.value = 0.5;
+      }
+    }
+    systemSelect.addEventListener('change', updateUIForSystem);
+    updateUIForSystem();
+
+    function getWinner(){
+      const radios = document.getElementsByName('winner');
+      for(const r of radios) if(r.checked) return r.value;
+      return '1';
+    }
+
+    function showElo(res){
+      output.style.display = 'block';
+      output.innerHTML = `
+        <div><strong>方式</strong>：Elo</div>
+        <div style="margin-top:8px;"><strong>P1 期待勝率</strong>：${roundTo(res.expected1,4)}</div>
+        <div style="margin-top:6px;"><strong>P1 Δ</strong>：<span class="delta ${res.delta1>0?'positive':''}">${res.delta1>=0?'+':''}${roundTo(res.delta1,2)}</span></div>
+        <div style="margin-top:6px;"><strong>P1 新レート</strong>：${roundTo(res.newR1,2)}</div>
+        <hr style="margin:12px 0;border:none;border-top:1px dashed #e6e6e6;" />
+        <div><strong>P2 期待勝率</strong>：${roundTo(res.expected2,4)}</div>
+        <div style="margin-top:6px;"><strong>P2 Δ</strong>：<span class="delta">${roundTo(res.delta2,2)}</span></div>
+        <div style="margin-top:6px;"><strong>P2 新レート</strong>：${roundTo(res.newR2,2)}</div>
+      `;
+    }
+
+    function showG1(res){
+      output.style.display = 'block';
+      output.innerHTML = `
+        <div><strong>方式</strong>：Glicko </div>
+        <div style="margin-top:8px;"><strong>P1 期待勝率</strong>：${roundTo(res.expected1,4)}</div>
+        <div style="margin-top:6px;"><strong>P1 Δ</strong>：<span class="delta ${res.newR1 - Number(r1Input.value) > 0 ? 'positive' : ''}">${(res.newR1 - Number(r1Input.value))>=0?'+':''}${roundTo(res.newR1 - Number(r1Input.value),2)}</span></div>
+        <div style="margin-top:6px;"><strong>P1 新レート</strong>：${roundTo(res.newR1,2)}</div>
+        <div style="margin-top:6px;"><strong>P1 新RD</strong>：${roundTo(res.newRD1,2)}</div>
+        <hr style="margin:12px 0;border:none;border-top:1px dashed #e6e6e6;" />
+        <div><strong>P2 期待勝率</strong>：${roundTo(res.expected2,4)}</div>
+        <div style="margin-top:6px;"><strong>P2 Δ</strong>：<span class="delta">${roundTo(res.newR2 - Number(r2Input.value),2)}</span></div>
+        <div style="margin-top:6px;"><strong>P2 新レート</strong>：${roundTo(res.newR2,2)}</div>
+        <div style="margin-top:6px;"><strong>P2 新RD</strong>：${roundTo(res.newRD2,2)}</div>
+      `;
+    }
+
+    function showG2(res){
+      output.style.display = 'block';
+      output.innerHTML = `
+        <div><strong>方式</strong>：Glicko-2</div>
+        <div style="margin-top:8px;"><strong>P1 期待勝率</strong>：${roundTo(res.expected1,4)}</div>
+        <div style="margin-top:6px;"><strong>P1 Δ</strong>：<span class="delta ${res.delta1>0?'positive':''}">${res.delta1>=0?'+':''}${roundTo(res.delta1,2)}</span></div>
+        <div style="margin-top:6px;"><strong>P1 新レート</strong>：${roundTo(res.newR1,2)}</div>
+        <div style="margin-top:6px;"><strong>P1 新RD</strong>：${roundTo(res.newRD1,2)}</div>
+        <div style="margin-top:6px;"><strong>P1 新σ</strong>：${roundTo(res.newSigma1,4)}</div>
+        <hr style="margin:12px 0;border:none;border-top:1px dashed #e6e6e6;" />
+        <div><strong>P2 期待勝率</strong>：${roundTo(res.expected2,4)}</div>
+        <div style="margin-top:6px;"><strong>P2 Δ</strong>：<span class="delta">${roundTo(res.delta2,2)}</span></div>
+        <div style="margin-top:6px;"><strong>P2 新レート</strong>：${roundTo(res.newR2,2)}</div>
+        <div style="margin-top:6px;"><strong>P2 新RD</strong>：${roundTo(res.newRD2,2)}</div>
+        <div style="margin-top:6px;"><strong>P2 新σ</strong>：${roundTo(res.newSigma2,4)}</div>
+      `;
+    }
+
+    calcBtn.addEventListener('click', ()=>{
+      const sys = systemSelect.value;
+      const r1 = Number(r1Input.value), r2 = Number(r2Input.value);
+      const winner = getWinner();
+      if(Number.isNaN(r1) || Number.isNaN(r2)){
+        output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">レートを確認してください。</span>'; return;
+      }
+      if(sys === 'elo'){
+        const K = Number(kInput.value);
+        if(Number.isNaN(K) || K<=0){ output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">K は正の数を指定してください。</span>'; return; }
+        const res = calcElo(r1,r2,winner,K); showElo(res);
+      } else if(sys === 'glicko'){
+        const rd1v = Number(rd1.value), rd2v = Number(rd2.value);
+        if(Number.isNaN(rd1v)||rd1v<=0||Number.isNaN(rd2v)||rd2v<=0){ output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">RD は正の数を指定してください。</span>'; return; }
+        const res = calcGlickoSeparateRD(r1,r2,rd1v,rd2v,winner); showG1(res);
+      } else {
+        const rd1v = Number(rd1.value), rd2v = Number(rd2.value);
+        const s1 = Number(sigma1.value), s2 = Number(sigma2.value), tau = Number(tauInput.value);
+        if(Number.isNaN(rd1v)||rd1v<=0||Number.isNaN(rd2v)||rd2v<=0){ output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">RD は正の数を指定してください。</span>'; return; }
+        if(Number.isNaN(s1)||s1<=0||Number.isNaN(s2)||s2<=0){ output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">σ は正の数を指定してください。</span>'; return; }
+        if(Number.isNaN(tau)||tau<=0){ output.style.display='block'; output.innerHTML = '<span style="color:#c0392b;font-weight:700;">τ は正の数を指定してください。</span>'; return; }
+        const res = calcGlicko2Separate(r1,r2,rd1v,rd2v,s1,s2,tau,winner); showG2(res);
+      }
+    });
+
+    swapBtn.addEventListener('click', ()=>{
+      const tmpR = r1Input.value; r1Input.value = r2Input.value; r2Input.value = tmpR;
+      const tmpRD = rd1.value; rd1.value = rd2.value; rd2.value = tmpRD;
+      const tmpS = sigma1.value; sigma1.value = sigma2.value; sigma2.value = tmpS;
+      const w = getWinner();
+      if(w==='1') document.querySelector('input[name="winner"][value="2"]').checked = true;
+      else if(w==='2') document.querySelector('input[name="winner"][value="1"]').checked = true;
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      systemSelect.value = 'elo'; updateUIForSystem();
+      r1Input.value = 1500; r2Input.value = 1500;
+      kInput.value = 32; rd1.value = 75; rd2.value = 75;
+      sigma1.value = 0.06; sigma2.value = 0.06; tauInput.value = 0.5;
+      document.querySelector('input[name="winner"][value="1"]').checked = true;
+      output.style.display='none';
+    });
+
+    // Enterキーで計算
+    [r1Input, r2Input, kInput, rd1, rd2, sigma1, sigma2, tauInput].forEach(el=>{
+      el.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') calcBtn.click(); });
+    });
+
+    // 初期
+    updateUIForSystem();
+    r1Input.focus();
+  </script>
+</body>
+</html>
