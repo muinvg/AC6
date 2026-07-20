@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>高度 UI コンポーネントまとめデモ</title>
+<style>
+  body {
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #0a0d11;
+    color: #d6dee6;
+    padding: 20px;
+  }
+  section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #10151b;
+    border: 1px solid #263140;
+    border-radius: 6px;
+  }
+  h2 {
+    margin-top: 0;
+    font-size: 16px;
+    border-bottom: 1px solid #263140;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+  button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background: #5fd4d0;
+    color: #0a0d11;
+    font-weight: 600;
+  }
+  button:hover {
+    background: #3a9f9c;
+  }
+
+  /* モーダル */
+  #modal-bg {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+  }
+  #modal-box {
+    background:#10151b; padding:20px; border-radius:6px;
+    width:300px; margin:120px auto;
+  }
+
+  /* アコーディオン */
+  .accordion { cursor:pointer; padding:10px; background:#141a21; }
+  .panel { display:none; padding:10px; background:#10151b; }
+
+  /* タブ */
+  .tab-btn { padding:8px; cursor:pointer; background:#263140; display:inline-block; margin-right:6px; }
+  .tab-content { display:none; padding:10px; background:#10151b; }
+
+  /* ドラッグ＆ドロップ */
+  #drag-list li {
+    background:#141a21; margin:4px 0; padding:6px;
+    border:1px solid #263140; cursor:grab;
+  }
+
+  /* サイドメニュー */
+  #side-menu {
+    position:fixed; left:-220px; top:0; width:220px; height:100%;
+    background:#141a21; transition:0.3s; padding:20px;
+  }
+
+  /* ライブ検索 */
+  #live-list li {
+    padding:4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>高度 UI コンポーネントまとめデモ</h1>
+
+<!-- 1. モーダル -->
+<section>
+  <h2>1. モーダルウィンドウ</h2>
+  <button id="open-modal">モーダルを開く</button>
+
+  <div id="modal-bg">
+    <div id="modal-box">
+      <h3>モーダル</h3>
+      <p>これはモーダルウィンドウです。</p>
+      <button id="close-modal">閉じる</button>
+    </div>
+  </div>
+</section>
+
+<!-- 2. アコーディオン -->
+<section>
+  <h2>2. アコーディオン（折りたたみ）</h2>
+  <div class="accordion">詳細を開く</div>
+  <div class="panel">ここに詳細情報が入ります。</div>
+</section>
+
+<!-- 3. タブ切り替え -->
+<section>
+  <h2>3. タブ切り替え UI</h2>
+  <div class="tab-btn" data-tab="tab1">タブ1</div>
+  <div class="tab-btn" data-tab="tab2">タブ2</div>
+  <div class="tab-btn" data-tab="tab3">タブ3</div>
+
+  <div id="tab1" class="tab-content">タブ1の内容です。</div>
+  <div id="tab2" class="tab-content">タブ2の内容です。</div>
+  <div id="tab3" class="tab-content">タブ3の内容です。</div>
+</section>
+
+<!-- 4. ドラッグ＆ドロップ -->
+<section>
+  <h2>4. ドラッグ＆ドロップで並び替え</h2>
+  <ul id="drag-list">
+    <li draggable="true">A</li>
+    <li draggable="true">B</li>
+    <li draggable="true">C</li>
+    <li draggable="true">D</li>
+  </ul>
+</section>
+
+<!-- 5. スライド式サイドメニュー -->
+<section>
+  <h2>5. スライド式サイドメニュー</h2>
+  <button id="toggle-side">メニューを開く</button>
+
+  <div id="side-menu">
+    <h3>サイドメニュー</h3>
+    <p>ここにメニュー内容が入ります。</p>
+  </div>
+</section>
+
+<!-- 6. ライブ検索（リアルタイム絞り込み） -->
+<section>
+  <h2>6. ライブ検索（リアルタイム絞り込み）</h2>
+  <input type="text" id="live-search" placeholder="検索">
+  <ul id="live-list">
+    <li>Alpha</li>
+    <li>Beta</li>
+    <li>Gamma</li>
+    <li>Delta</li>
+    <li>Epsilon</li>
+  </ul>
+</section>
+
+<script>
+/* 1. モーダル */
+document.getElementById("open-modal").onclick = () =>
+  document.getElementById("modal-bg").style.display = "block";
+document.getElementById("close-modal").onclick = () =>
+  document.getElementById("modal-bg").style.display = "none";
+
+/* 2. アコーディオン */
+document.querySelector(".accordion").onclick = () => {
+  const p = document.querySelector(".panel");
+  p.style.display = p.style.display === "block" ? "none" : "block";
+};
+
+/* 3. タブ切り替え */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-content").forEach(c => c.style.display="none");
+    document.getElementById(btn.dataset.tab).style.display = "block";
+  };
+});
+
+/* 4. ドラッグ＆ドロップ */
+const list = document.getElementById("drag-list");
+let dragItem = null;
+
+list.addEventListener("dragstart", e => dragItem = e.target);
+list.addEventListener("dragover", e => e.preventDefault());
+list.addEventListener("drop", e => {
+  if (e.target.tagName === "LI") {
+    list.insertBefore(dragItem, e.target.nextSibling);
+  }
+});
+
+/* 5. サイドメニュー */
+document.getElementById("toggle-side").onclick = () => {
+  const s = document.getElementById("side-menu");
+  s.style.left = s.style.left === "0px" ? "-220px" : "0px";
+};
+
+/* 6. ライブ検索 */
+const liveInput = document.getElementById("live-search");
+const liveItems = document.querySelectorAll("#live-list li");
+
+liveInput.oninput = () => {
+  const k = liveInput.value.toLowerCase();
+  liveItems.forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(k) ? "" : "none";
+  });
+};
+</script>
+
+</body>
+</html>
