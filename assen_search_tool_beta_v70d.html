@@ -2014,7 +2014,7 @@ const FILTER_STEP_OVERRIDES = {
 
 function renderPanel5() {
   const body = document.getElementById("panel5-body");
-  let html = '<div class="panel-intro">希望する条件を入力してください（例 実弾防御1200以上,QBリロード時間0.9以下,EN供給効率4000以上,など）</div>';
+  let html = '<div class="panel-intro">希望する条件を入力してください（例 実弾防御1200以上,反動制御100以上,EN供給効率4000以上など）</div>';
   html += '<div class="btn-row compact"><button id="p5-reset-btn" class="compact-btn">数値をリセット</button></div>';
   html += '<table class="filter-table"><tr><th>指標</th><th>数値</th><th>以上/以下</th></tr>';
   for (const ind of PRE_SEARCH_FILTER_INDICATORS) {
@@ -2373,7 +2373,7 @@ let selectedResult = null; // 選択中の検索結果（オブジェクト参�
 function initPanel8Skeleton() {
   const body = document.getElementById("panel7-body");
   body.innerHTML =
-    '<div class="panel-intro">検索後、所望の順で並べてください（例 AP大きい順 20件）。ボタンを選択すると該当アセンが表示されます。</div>' +
+    '<div class="panel-intro">検索後、所望の順で並べてください（例 AP大きい順 20件）。ボタンを押すと該当アセンが表示されます。</div>' +
     '<div id="p7-parts"><div class="empty-note">まだ検索していません。</div></div>' +
     '<hr class="panel-divider">' +
     '<div class="stat-line"><span>検索ヒット件数</span><span class="v" id="p7-hit-count-v">-</span></div>' +
@@ -3074,7 +3074,7 @@ function renderPanel10() {
 function renderPanel6() {
   const body = document.getElementById("panel6-body");
   body.innerHTML =
-    '<div class="panel-intro">固定する条件を入力してください。武装は1つ以上入力してください。できればFCSも固定するのがおすすめです。</div>' +
+    '<div class="panel-intro">固定する条件を入力してください（武装は1つ以上入力）。できればFCSも固定するのがおすすめです。</div>' +
     '<div class="btn-row compact"><button id="p6-copy-btn" class="compact-btn">パネル2から武装をコピー</button></div>' +
     '<hr class="panel-divider">' +
     '<div id="p6-fixed"></div>' +
