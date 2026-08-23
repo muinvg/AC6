@@ -10,6 +10,7 @@ AC6に関するツール類の置き場として使用
 
 質問など(note): 
 [質問箱](https://note.com/qa/legit_bee9658) 
+ / 
 [マシュマロ](https://marshmallow-qa.com/l31m97i79gtxt8w?t=at1R8z&utm_medium=url_text&utm_source=promotion) 
 
 レーティング計算: 
