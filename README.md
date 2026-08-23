@@ -2,6 +2,8 @@
 AC6に関するツール類の置き場として使用
 
 アセン検索ツール: 
+[ Ver0.8 ](https://muinvg.github.io/AC6/Assembly_Explorer_v08.html) 
+ / 
 [ Ver0.7 ](https://muinvg.github.io/AC6/Assembly_Explorer_v07.html) 
  / 
 [ Ver0.5 ](https://muinvg.github.io/AC6/Assembly_Explorer_v05.html) 
