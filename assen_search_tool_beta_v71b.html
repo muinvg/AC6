@@ -318,8 +318,8 @@ body.hide-panel-intros .panel-intro{ display:none; }
       <div class="panel-intro">希望する条件を満たすアセンを検索するツールです。パネル1～8を順に入力・閲覧して使用します。</div>
       <div style="display:flex; gap:10px; align-items:center; margin:6px 0; font-size:12px;">
         <span class="section-note" style="margin:0;">パネル説明文の表示：</span>
-        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-show" value="show"> 表示</label>
-        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-hide" value="hide" checked> 非表示</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-show" value="show" checked> 表示</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-hide" value="hide"> 非表示</label>
       </div>
       <ul>
         <li>本ツールはPCやタブレットなどの大きな画面で操作することをおすすめします。スマホでも操作可能ですが少し見にくいかもしれません。</li>
@@ -3637,7 +3637,7 @@ Object.values(TRADEOFF_INSTANCES).forEach((inst) => {
 
 
 /* →デフォルトを表示に変更 コメントアウトで対応・本文側の checkedも変更済み */
-document.body.classList.add("hide-panel-intros");
+//document.body.classList.add("hide-panel-intros");
 document.querySelectorAll('input[name="intro-visibility"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     document.body.classList.toggle("hide-panel-intros", radio.value === "hide");
