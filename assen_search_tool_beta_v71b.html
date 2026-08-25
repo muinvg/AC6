@@ -50,12 +50,17 @@ header .badge{
 .grid{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 740px;
+  grid-auto-rows: auto;
+  align-items: start;
   gap: 10px;
   padding: 10px;
 }
 @media (max-width: 1150px){
-  .grid{ grid-template-columns: repeat(2, 1fr); grid-auto-rows: 740px; }
+  .grid{
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+    align-items: start;
+  }
 }
 @media (max-width: 640px) {
   .grid {
@@ -824,7 +829,7 @@ function computeAssen(parts) {
   const qb5kaiKaifukuTsujou = enHojuuChien + 0.01 * Math.round((100 * (5 * qbShouhiENJikkou)) / enKyoukyuuKouritsu);
 
   const warnings = [keikoku1, keikoku2, keikoku3].filter(Boolean);
-  const warningStr = warnings.length ? warnings.join(", ") : "異常なし";
+  const warningStr = warnings.length ? warnings.join(", ") : "なし";
 
   // (24)(25)(26) 攻撃許容量系（アセン指標06.txtで追加）
   const jitsudanKougekiKyoyouRyou = Math.floor(basic.AP / (2 - basic.耐弾防御 / 1000));
@@ -996,7 +1001,7 @@ function renderMetricTable(metrics, order) {
   const rows = (order || DISPLAY_ORDER).map((d) => {
     if (d.blank) return '<tr class="blank"><td>&nbsp;</td><td>&nbsp;</td></tr>';
     if (d.isWarning) {
-      const ok = metrics[d.k] === "異常なし";
+      const ok = metrics[d.k] === "なし";
       return (
         '<tr class="warn-row"><td>' + d.label + "</td><td" + (ok ? ' class="warn-ok"' : "") + ">" + metrics[d.k] + "</td></tr>"
       );
@@ -2743,9 +2748,9 @@ function renderPanel7Parts(r) {
   body.innerHTML = html;
 }
 
-// 警告文字列に含まれる警告の件数（"異常なし"なら0）
+// 警告文字列に含まれる警告の件数（"なし"なら0）
 function countWarnings(str) {
-  return str === "異常なし" ? 0 : str.split(",").length;
+  return str === "なし" ? 0 : str.split(",").length;
 }
 
 // アセン0(基準)とアセンX(検索結果)の指標を左右比較で表示する。
