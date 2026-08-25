@@ -57,12 +57,25 @@ header .badge{
 @media (max-width: 1150px){
   .grid{ grid-template-columns: repeat(2, 1fr); grid-auto-rows: 740px; }
 }
-@media (max-width: 640px){
-  .grid{ 
-    grid-template-columns: 1fr; 
-    grid-auto-rows: auto;   /* ← 740pxの固定高さを解除し、中身に応じた可変にする */
-    align-items: start;     /* ← パネルが自分のコンテンツの高さで自然に止まるようにする */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    align-items: start;
   }
+
+  /* 全パネルのベース順序を個別の番号で割り振る */
+  .grid > *:nth-child(1)  { order: 11; }
+  .grid > *:nth-child(2)  { order: 1; }
+  .grid > *:nth-child(3)  { order: 2; }
+  .grid > *:nth-child(4)  { order: 3; }
+  .grid > *:nth-child(5)  { order: 4; }
+  .grid > *:nth-child(6)  { order: 5; }
+  .grid > *:nth-child(7)  { order: 6; }
+  .grid > *:nth-child(8)  { order: 7; }
+  .grid > *:nth-child(9)  { order: 10; }
+  .grid > *:nth-child(10) { order: 8; }
+  .grid > *:nth-child(11) { order: 9; }
 }
 .panel{
   background: var(--panel-bg);
@@ -301,8 +314,8 @@ body.hide-panel-intros .panel-intro{ display:none; }
       <div class="panel-intro">希望する条件を満たすアセンを検索するツールです。パネル1～8を順に入力・閲覧して使用します。</div>
       <div style="display:flex; gap:10px; align-items:center; margin:6px 0; font-size:12px;">
         <span class="section-note" style="margin:0;">パネル説明文の表示：</span>
-        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-show" value="show" checked> 表示</label>
-        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-hide" value="hide"> 非表示</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-show" value="show"> 表示</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="radio" name="intro-visibility" id="intro-visibility-hide" value="hide" checked> 非表示</label>
       </div>
       <ul>
         <li>本ツールはPCやタブレットなどの大きな画面で操作することをおすすめします。スマホでも操作可能ですが少し見にくいかもしれません。</li>
@@ -3620,7 +3633,7 @@ Object.values(TRADEOFF_INSTANCES).forEach((inst) => {
 
 
 /* →デフォルトを表示に変更 コメントアウトで対応・本文側の checkedも変更済み */
-//document.body.classList.add("hide-panel-intros");
+document.body.classList.add("hide-panel-intros");
 document.querySelectorAll('input[name="intro-visibility"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     document.body.classList.toggle("hide-panel-intros", radio.value === "hide");
