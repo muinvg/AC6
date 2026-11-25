@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>アセン検索ツール - Ver0.85</title>
+<title>アセン検索ツール - Ver0.86</title>
 <style>
 :root{
   --bg: #0a0d11;
@@ -73,9 +73,10 @@ header .badge{
   .grid > *:nth-child(6)  { order: 6; }
   .grid > *:nth-child(7)  { order: 7; }
   .grid > *:nth-child(8)  { order: 8; }
-  .grid > *:nth-child(9)  { order: 11; }
+  .grid > *:nth-child(9)  { order: 12; }
   .grid > *:nth-child(10) { order: 9; }
   .grid > *:nth-child(11) { order: 10; }
+  .grid > *:nth-child(12) { order: 11; }
 }
 .panel{
   background: var(--panel-bg);
@@ -146,6 +147,18 @@ table.metric-table tr.blank td{ border-bottom:none; }
 table.metric-table tr.warn-row td{ color: var(--warn); }
 table.metric-table tr.warn-row td.warn-ok{ color: var(--ok); }
 table.compare-table.edit-mode td.row-drag-handle{ width:14px; }
+/* パネル12（アセン比較）：指標＋AC0〜AC3の複数列。パネル8用の列幅指定を上書きする */
+table.multi-compare-table th{
+  padding:2px 4px; font-family: var(--mono); font-size:11px; font-weight:normal;
+  color: var(--text-dim); text-align:right; border-bottom:1px solid var(--border-bright);
+}
+table.multi-compare-table th:first-child{ text-align:left; }
+table.multi-compare-table td{ text-align:right; }
+table.multi-compare-table td:first-child{ width:28%; text-align:left; }
+table.multi-compare-table td.row-drag-handle{ text-align:center; }
+table.multi-compare-table.edit-mode td.row-drag-handle + td{ text-align:left; }
+table.multi-compare-table td.base-val{ width:auto; }
+table.multi-compare-table td:last-child{ width:auto; }
 table.compare-table.edit-mode td.row-drag-handle + td{
   width:50%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
@@ -184,6 +197,16 @@ button.danger{ border-color: var(--danger); color: var(--danger); }
 .btn-row{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
 .btn-row.compact{ margin-top:2px; margin-bottom:2px; }
 .compact-btn{ padding: 4.5px 12px; }
+.panel-sep{ border:0; border-top:1px solid var(--border); margin:10px 0; }
+.slot-note{ font-size:12px; line-height:1.6; color: var(--text); margin:6px 0 2px; }
+/* パネル11：AC0〜AC3のパーツ一覧表（横幅が足りないときは、パーツ名を折り返す） */
+table.parts-table{ width:100%; table-layout:fixed; border-collapse:collapse; font-size:11px; }
+table.parts-table th, table.parts-table td{
+  padding:2px 3px; text-align:left; vertical-align:top; overflow-wrap:anywhere;
+  border-bottom:1px solid var(--border);
+}
+table.parts-table th{ color: var(--text-dim); font-weight:normal; font-family: var(--mono); }
+table.parts-table th:first-child, table.parts-table td:first-child{ width:34px; color: var(--text-dim); font-family: var(--mono); }
 .tab-btn{ padding: 6px 8px; }
 .disp-tab-btn{ padding: 3px 8px; }
 .tradeoff-marker{
@@ -302,7 +325,7 @@ body.hide-panel-intros .panel-intro{ display:none; }
 <header>
   <div class="title">アセン検索ツール</div>
   <div class="subtitle">Assembly Explorer, Assembled with Claude</div>
-  <div class="badge">Ver0.85</div>
+  <div class="badge">Ver0.86</div>
 </header>
 
 <div class="grid">
@@ -313,10 +336,10 @@ body.hide-panel-intros .panel-intro{ display:none; }
     <div class="panel-body note-panel">
       <div class="panel-intro">アセンスペックの閲覧と、希望する条件を満たすアセンを検索するツールです。</div>
       <ul>
-        <li>本ツールは、①アセンを入力してスペック(AC SPEC)を表示する機能と、②スペックを検索条件にしてアセンを検索する機能があります。</li>
+        <li>本ツールは2つの機能があります。①アセンを入力してスペック(AC SPEC)を表示する機能 ②スペックを検索条件にしてアセンを検索する機能</li>
         <li>各種速度、EN関係など一部のスペックは経験式で求めているので誤差があります。</li>
         <li>本ツール最新版はこちら → <a href="https://muinvg.github.io/AC6/">公開ページ</a></li>
-        <li>最終的なアセンは必ずゲーム上で確認してください</li>
+        <li>最終的なアセンは必ずゲーム上で確認してください（本ツールはRegulation Ver.1.09.1でのアセンを前提）</li>
       </ul>
       <hr class="panel-divider">
       <div class="preset-note">本ツールのチュートリアルとして、アセンの例を以下から選択すると雰囲気を把握できます。また、各パネルの説明文の表示を選べます。</div>
@@ -457,7 +480,7 @@ body.hide-panel-intros .panel-intro{ display:none; }
         <ul>
           <li>結果が100件以上あるときは、結果を各種性能（例えばAP 大きい順）で並び替えて、自分で十分だと判断できるラインがあれば検索条件に組み込み、再検索しましょう。</li>
           <li>再検索に時間がかかる場合は、本パネルの「検索方法」タブを参照して検索の条件を再度検討してください。</li>
-          <li>自分がパネル5の条件で指定していない性能で並び替えると思わぬ発見があることがあります。どこまで指標を攻められそうかなどを見ることもできます。</li></li>
+          <li>自分がパネル5の条件で指定していない性能で並び替えると思わぬ発見があることがあります。どこまで指標を攻められそうかなどを見ることもできます。</li>
           <li>自分が条件で指定した条件で並び替えると、自分で指定した条件が厳しいのかまだまだ余裕があるのかわかります。</li>
           <li>結果が20~30件くらいになってきたら、アセンの傾向を眺めてみるのも良いと思います。経験上、頭違いが多いと思いますので（頭部固定していない場合）、性能に甲乙つけがたい場合は頭で選ぶのも一興です。</li>
           <li>上手に条件を決めると結果を10件未満くらいに絞れます。そこから先は一個一個吟味することをおすすめします。</li>
@@ -471,7 +494,7 @@ body.hide-panel-intros .panel-intro{ display:none; }
   <!-- Panel10: 将来機能（試製版） -->
   <section class="panel">
     <div class="panel-head"><span class="panel-num">10</span><span class="panel-title">将来機能（被弾試算）</span></div>
-    <li>注意：この機能はお試し版として公開しています</li>
+    <ul style="list-style:none;margin:0;padding:0;"><li>注意：この機能はお試し版として公開しています</li></ul>
     <div class="panel-body note-panel" id="panel10-body">
       <div class="panel-intro">敵機想定の武装・腕部・ジェネレータを選ぶと、非スタッガー時の被弾状況の目安を試算します。</div>
       <div id="panel10-dynamic"></div>
@@ -481,20 +504,32 @@ body.hide-panel-intros .panel-intro{ display:none; }
   <!-- Panel11: 将来機能（試製版） -->
   <section class="panel">
     <div class="panel-head"><span class="panel-num">11</span><span class="panel-title">将来機能（アセン一時保存）</span></div>
-    <li>注意：この機能はお試し版として公開しています</li>
+    <ul style="list-style:none;margin:0;padding:0;"><li>注意：この機能はお試し版として公開しています</li></ul>
     <div class="panel-body">
-      <div class="panel-intro">検索結果で選択中のアセンを一時的に保存できます。</div>
+      <hr class="panel-sep">
+      <div class="slot-note">選択中のアセンを保存します。</div>
       <div class="btn-row compact">
-        <button id="p11-slot-save-1" class="compact-btn">選択中のアセンをスロット1に保存</button>
-        <button id="p11-slot-save-2" class="compact-btn">選択中のアセンをスロット2に保存</button>
+        <button id="p11-slot-save-1" class="compact-btn" data-slot-action="save" data-slot="1">AC1保存</button>
+        <button id="p11-slot-save-2" class="compact-btn" data-slot-action="save" data-slot="2">AC2保存</button>
+        <button id="p11-slot-save-3" class="compact-btn" data-slot-action="save" data-slot="3">AC3保存</button>
       </div>
+      <hr class="panel-sep">
+      <div class="slot-note">スロットのアセンをパネル2に読み込みます。パネル2のアセンに上書きされるので注意してください。</div>
       <div class="btn-row compact">
-        <button id="p11-slot-load-1" class="compact-btn">スロット1からパネル2へロード</button>
-        <button id="p11-slot-load-2" class="compact-btn">スロット2からパネル2へロード</button>
+        <button id="p11-slot-load-1" class="compact-btn" data-slot-action="load" data-slot="1">AC1読込</button>
+        <button id="p11-slot-load-2" class="compact-btn" data-slot-action="load" data-slot="2">AC2読込</button>
+        <button id="p11-slot-load-3" class="compact-btn" data-slot-action="load" data-slot="3">AC3読込</button>
       </div>
+      <hr class="panel-sep">
+      <div id="p11-parts"></div>
     </div>
   </section>
 
+  <!-- Panel12: アセン比較（AC0〜AC3） -->
+  <section class="panel">
+    <div class="panel-head"><span class="panel-num">12</span><span class="panel-title">アセン比較</span></div>
+    <div class="panel-body" id="panel12-body"><div class="panel-intro">パネル2のアセン（AC0）を基準に、保存したAC1〜AC3と比較（色分け表示）</div><div id="panel12-dynamic"></div></div>
+  </section>
 
 </div>
 
@@ -541,16 +576,43 @@ const CATEGORY_SHORT_LABEL = {
   P9: "BOOSTER", P10: "FCS", P11: "GENERATOR",
 };
 
+/* ---------- 状態変数（表示・検索・共有リンク復元） ---------- */
+
+// 【表示】
 // パーツ名の表示モード："formal"=正式名称（part_name） / "short"=略称（short_name） / "nickname"=通称（easy_name、未設定ならpart_nameにフォールバック）
 let nameDisplayMode = "short";
-// パネル8（指標表示2）の表示パターン切替（"A" または "B"、デフォルトA。アセン指標06.txt [3]参照）
-// パネル4はパターンE固定表示のため、この切替は対象外（アセン指標07b.txt [3-5]）。
+// パネル8（指標表示2）の表示パターン切替（"A" または "B"、デフォルトA）。
+// パネル4はパターンE固定表示のため、この切替は対象外。
 let panel8DisplayPattern = "A";
-// パネル8「配置編集モード」（試験実装、D.2「指標カードをドラッグして並び替え」）関連の状態。
+// パネル8「配置編集モード」（試験実装。指標カードをドラッグして並び替える）関連の状態。
 // 表示A・表示Bはそれぞれ独立したカスタム順を保持する（解釈1）。ピン留め機能は不採用。
 // null＝未カスタマイズ（デフォルトのPATTERN_A/B_KEYS順を使用）、配列＝ドラッグ後のキー順。
 let panel8EditMode = false;
 const panel8CustomOrderKeys = { A: null, B: null };
+// パネル12（アセン比較）の表示パターン・配置編集モード・カスタム順。パネル8とは独立して保持する。
+let panel12DisplayPattern = "A";
+let panel12EditMode = false;
+const panel12CustomOrderKeys = { A: null, B: null };
+
+// 【検索条件（パネル5）：並び替えと件数】
+let sortKey = "AP";
+let sortDir = "desc";
+let resultN = 20;
+let tradeoffN = 50; // ２軸表示専用の件数（ソート表示のresultNとは独立）
+// 【検索の実行と結果】
+let currentWorker = null;
+let currentWorkerUrl = null; // 実行中Workerに渡したBlob URL（完了・中止・異常のどの経路でも解放するために保持する）
+let heldResults = []; // 検索条件(パネル5・警告フィルタ)に合致した全候補（上限件数まで保持、ソート前）
+let heldMatchedCount = 0; // 条件に合致した総数（保持上限を超えた分も含む）
+let searchResults = []; // heldResultsを並び順・件数(resultN)で絞り込んだ表示用の配列（ソート表示・パネル8で使用）
+let tradeoffResults = []; // heldResultsを並び順・件数(tradeoffN)で絞り込んだ表示用の配列（２軸表示専用）
+let selectedResult = null; // 選択中の検索結果（オブジェクト参照。searchResults/tradeoffResultsどちらの由来でも共通）
+// 【パネル10（被弾試算）】
+let panel10Tab = "calc"; // "calc"（被弾試算） | "info"（説明）
+// 【共有リンクの復元】renderPanel6()実行前に確定できないDOM値（警告2/3許容セレクト）は、いったんここに保持し、
+// renderPanel6()実行後に反映する。
+let statePendingAllowW2 = null;
+let statePendingAllowW3 = null;
 function partDisplayName(part) {
   if (nameDisplayMode === "short" && part.short_name) return part.short_name;
   if (nameDisplayMode === "nickname" && part.easy_name) return part.easy_name;
@@ -567,7 +629,7 @@ function isTankLeg(p8) {
 }
 
 /* ---------- 1. 計算ロジック（アセン指標02c.txt 準拠） ---------- */
-// ===== 共通ユーティリティ =====
+/* ---------- 共通ユーティリティ ---------- */
 function num(v) {
   if (v === undefined || v === null || v === "") return 0;
   if (typeof v === "number") return v;
@@ -583,85 +645,148 @@ const COEF_TF_MAP = {
   "EL-TL-11 FORTALEZA": 1.344,
 };
 
-function b0Func(W) {
-  if (W < 40000) return 0.05999484;
-  if (W < 62500) return 0.067731837 + (W / 1000) * -0.000196934;
-  if (W < 75000) return 0.0777550156 + (W / 1000) * -0.0003576168;
-  if (W < 80000) return 0.1183370187 + (W / 1000) * -0.0008988813;
-  if (W < 120000) return 0.0613306006 + (W / 1000) * -0.0001865828;
-  return 3.900534e-2 + (W / 1000) * 1.183404e-8;
+/* 区分線形関数のテーブル（アセン指標07e (27)(28) の係数）。各行が1つの区間：
+     to = この値「未満」の区間（最後の行は上限なし）、c = 定数、k = 傾き（省略すると定数）、
+     x0 = 「(変数 − x0) × k」の形のときの x0。
+   区間の値は c + t×k（または c + (t − x0)×k）。t は x を scale で割った値
+   （重量の関数は W/1000、比率 r・ホバーの u の関数は x そのもの）。評価は共通関数 pwl。
+   Worker へは、定数（JSON）と関数 pwl として渡す。JSON では Infinity と -0 が失われるため、
+   「上限なし」は to を省略し、傾き0は 0 で表す（有限の入力では、値は元の式とビット一致）。 */
+const PWL_B0 = { scale: 1000, segs: [
+  { to: 40000, c: 0.05999484 },
+  { to: 62500, c: 0.067731837, k: -0.000196934 },
+  { to: 75000, c: 0.0777550156, k: -0.0003576168 },
+  { to: 80000, c: 0.1183370187, k: -0.0008988813 },
+  { to: 120000, c: 0.0613306006, k: -0.0001865828 },
+  { c: 3.900534e-2, k: 1.183404e-8 },
+] };
+const PWL_Q0 = { scale: 1000, segs: [
+  { to: 40000, c: 0.02 },
+  { to: 62500, c: 0.018, x0: 62.5, k: -(0.02 - 0.018) / (62.5 - 40) },
+  { to: 75000, c: 0.017, x0: 75, k: -(0.018 - 0.017) / (75 - 62.5) },
+  { to: 80000, c: 0.016, x0: 80, k: -(0.017 - 0.016) / (80 - 75) },
+  { to: 120000, c: 0.014, x0: 120, k: -(0.016 - 0.014) / (120 - 80) },
+  { c: 0.014, k: 0 },
+] };
+const PWL_A0 = { scale: 1000, segs: [
+  { to: 40000, c: 0.06, k: 0 },
+  { to: 50000, c: 0.0719303061, k: -0.0002999788 },
+  { to: 75000, c: 0.0628451994, k: -0.0001185314 },
+  { to: 100000, c: 0.0900240125, k: -0.0004807512 },
+  { to: 150000, c: 0.0599127116, k: -0.0001795912 },
+  { c: 0.03295572, k: 0 },
+] };
+const PWL_RV0 = { scale: 1000, segs: [
+  { to: 40000, c: 0.06 },
+  { to: 75000, c: 0.0701397288, k: -0.0002576899 },
+  { to: 80000, c: 0.0952753969, k: -0.0005923689 },
+  { to: 120000, c: 0.0597818832, k: -0.0001491915 },
+  { c: 0.042 },
+] };
+const PWL_SBOOST = { scale: 1, segs: [
+  { to: 0, c: 1.0 },
+  { to: 0.05, c: 0.9997208, k: -1.0138962 },
+  { to: 0.1, c: 1.099291, k: -2.999988 },
+  { to: 0.5, c: 0.8235306, k: -0.2503261 },
+  { c: 0.699366037, k: -0.001606523 },
+] };
+const PWL_SQB = { scale: 1, segs: [
+  { to: 0, c: 1.0 },
+  { to: 0.05, c: 1.0, k: -1.0 },
+  { to: 0.1, c: 1.1, k: -3.0 },
+  { to: 0.5, c: 0.825, k: -0.25 },
+  { c: 0.7, k: 0 },
+] };
+const PWL_SAB = { scale: 1, segs: [
+  { to: 0, c: 1.0 },
+  { to: 0.05, c: 1.000413, k: -1.000329 },
+  { to: 0.1, c: 1.098517, k: -2.982728 },
+  { to: 0.5, c: 0.8242515, k: -0.2480306 },
+  { c: 0.702990462, k: -0.003880338 },
+] };
+const PWL_H0 = { scale: 1, segs: [
+  { to: 70, c: 1.0 },
+  { to: 100, c: 1.35130428, k: -0.00501679 },
+  { to: 110, c: 1.85050991, k: -0.01000533 },
+  { to: 120, c: 1.2764821, k: -0.00479181 },
+  { c: 0.7 },
+] };
+const PWL_SHOVER = { scale: 1, segs: [
+  { to: 0, c: 1.0 },
+  { to: 0.1, c: 0.9999378, k: -2.0178427 },
+  { to: 0.5, c: 0.8495238, k: -0.5011666 },
+  { c: 0.59948298, k: -0.001212335 },
+] };
+const PWL_SRV = { scale: 1, segs: [
+  { to: 0, c: 1.0 },
+  { to: 0.05, c: 1.00064, k: -1.045639 },
+  { to: 0.1, c: 1.100689, k: -3.031582 },
+  { to: 0.5, c: 0.8239116, k: -0.2481143 },
+  { c: 0.7 },
+] };
+
+/* 区分線形関数の共通の評価関数。tbl の区間のうち x が「to 未満」になる最初の区間の値を返す。
+   どの区間にも当てはまらない値（上限以上、NaN）は、最後の区間の値になる（元の if の連鎖と同じ）。 */
+function pwl(tbl, x) {
+  const segs = tbl.segs;
+  const last = segs.length - 1;
+  let s = segs[last];
+  for (let i = 0; i < last; i++) {
+    if (x < segs[i].to) { s = segs[i]; break; }
+  }
+  if (s.k === undefined) return s.c;
+  const t = x / tbl.scale;
+  return s.c + (s.x0 === undefined ? t * s.k : (t - s.x0) * s.k);
 }
-function sBoostFunc(r) {
-  if (r < 0) return 1.0;
-  if (r < 0.05) return 0.9997208 + r * -1.0138962;
-  if (r < 0.1) return 1.099291 + r * -2.999988;
-  if (r < 0.5) return 0.8235306 + r * -0.2503261;
-  return 0.699366037 + r * -0.001606523;
+
+/* テーブルの区間の境界（最後の区間を除く各行の to）。枝刈りが、区間の境界で関数を評価するために使う。 */
+function pwlBreaks(tbl) {
+  return tbl.segs.slice(0, -1).map((s) => s.to);
 }
-function q0Func(W) {
-  if (W < 40000) return 0.02;
-  if (W < 62500) return 0.018 + (W / 1000 - 62.5) * (-(0.02 - 0.018) / (62.5 - 40));
-  if (W < 75000) return 0.017 + (W / 1000 - 75) * (-(0.018 - 0.017) / (75 - 62.5));
-  if (W < 80000) return 0.016 + (W / 1000 - 80) * (-(0.017 - 0.016) / (80 - 75));
-  if (W < 120000) return 0.014 + (W / 1000 - 120) * (-(0.016 - 0.014) / (120 - 80));
-  return 0.014 + (W / 1000) * 0.0;
-}
-function sQBFunc(r) {
-  if (r < 0) return 1.0;
-  if (r < 0.05) return 1.0 + r * -1.0;
-  if (r < 0.1) return 1.1 + r * -3.0;
-  if (r < 0.5) return 0.825 + r * -0.25;
-  return 0.7 + r * -0.0;
-}
-function a0Func(W) {
-  if (W < 40000) return 0.06 + (W / 1000) * 0.0;
-  if (W < 50000) return 0.0719303061 + (W / 1000) * -0.0002999788;
-  if (W < 75000) return 0.0628451994 + (W / 1000) * -0.0001185314;
-  if (W < 100000) return 0.0900240125 + (W / 1000) * -0.0004807512;
-  if (W < 150000) return 0.0599127116 + (W / 1000) * -0.0001795912;
-  return 0.03295572 + (W / 1000) * 0.0;
-}
-function sABFunc(r) {
-  if (r < 0) return 1.0;
-  if (r < 0.05) return 1.000413 + r * -1.000329;
-  if (r < 0.1) return 1.098517 + r * -2.982728;
-  if (r < 0.5) return 0.8242515 + r * -0.2480306;
-  return 0.702990462 + r * -0.003880338;
-}
+
+function b0Func(W) { return pwl(PWL_B0, W); }
+function sBoostFunc(r) { return pwl(PWL_SBOOST, r); }
+function q0Func(W) { return pwl(PWL_Q0, W); }
+function sQBFunc(r) { return pwl(PWL_SQB, r); }
+function a0Func(W) { return pwl(PWL_A0, W); }
+function sABFunc(r) { return pwl(PWL_SAB, r); }
+function h0Func(u) { return pwl(PWL_H0, u); }
+function sHoverFunc(r) { return pwl(PWL_SHOVER, r); }
+function rv0Func(W) { return pwl(PWL_RV0, W); }
+function srvFunc(r) { return pwl(PWL_SRV, r); }
 
 // (23) ホバー速度
 const HSMAX_MAP = { "LAMMERGEIER/42F": 379.5, "VP-424": 349.5, "LG-033M VERRILL": 339.5 };
-function h0Func(u) {
-  if (u < 70) return 1.0;
-  if (u < 100) return 1.35130428 + u * -0.00501679;
-  if (u < 110) return 1.85050991 + u * -0.01000533;
-  if (u < 120) return 1.2764821 + u * -0.00479181;
-  return 0.7;
-}
-function sHoverFunc(r) {
-  if (r < 0) return 1.0;
-  if (r < 0.1) return 0.9999378 + r * -2.0178427;
-  if (r < 0.5) return 0.8495238 + r * -0.5011666;
-  return 0.59948298 + r * -0.001212335;
-}
-
-// (27) 上昇ブースト速度（アセン指標07.txtで追加）
-function rv0Func(W) {
-  if (W < 40000) return 0.06;
-  if (W < 75000) return 0.0701397288 + (W / 1000) * -0.0002576899;
-  if (W < 80000) return 0.0952753969 + (W / 1000) * -0.0005923689;
-  if (W < 120000) return 0.0597818832 + (W / 1000) * -0.0001491915;
-  return 0.042;
-}
-function srvFunc(r) {
-  if (r < 0) return 1.0;
-  if (r < 0.05) return 1.00064 + r * -1.045639;
-  if (r < 0.1) return 1.100689 + r * -3.031582;
-  if (r < 0.5) return 0.8239116 + r * -0.2481143;
-  return 0.7;
-}
 
 const STAT_CATS = ["P5", "P6", "P7", "P8"];
+
+/* EN供給効率（アセン指標07e (5)）：EN余剰（EN出力実効値－EN負荷合計）の区分線形回帰式を切り捨てた値。
+   computeAssen と枝刈りの両方から呼ぶ共通関数（Workerにも渡す。buildSharedWorkerCode の funcs に登録）。 */
+function enKyoukyuuKouritsuFn(enYojou) {
+  if (enYojou < 0) return 100;
+  if (enYojou < 1800) return Math.floor(1500 + (75 / 18) * enYojou);
+  if (enYojou < 3500) return Math.floor(9000 + (75 / 17) * (enYojou - 1800));
+  return 16500;
+}
+
+/* EN補充遅延（アセン指標07e (0)(1)）：基本EN補充遅延（中間値）に、ジェネレータ供給補正を掛けて、1/100単位に四捨五入した値。
+   最終出力は「整数（1/100単位）÷100」で表す（0.01*整数 だと 0.57 が 0.5700000000000001 になる場合があるため）。
+   丸める前の式（内側）は変えない。computeAssen と枝刈りの両方から呼ぶ共通関数（Workerにも渡す）。 */
+function enHojuuChienFn(enHojuuSeinou, genKyoukyuuHosei) {
+  const kihon = 0.01 * Math.round((100 * 1000) / enHojuuSeinou);
+  return Math.round(100 * kihon * (2 - genKyoukyuuHosei / 100)) / 100;
+}
+
+/* 供給復元遅延（アセン指標07e (1)）。computeAssen と枝刈りの共通関数（Workerにも渡す）。 */
+function kyoukyuuFukugenChienFn(kyoukyuuFukugenSeinou, genKyoukyuuHosei) {
+  return Math.round(100 * (1000 / kyoukyuuFukugenSeinou) * (2 - genKyoukyuuHosei / 100)) / 100;
+}
+
+/* QB消費EN（実効値）（アセン指標07e (6)）。整数どうしの積を100で割ってから切り捨てる
+   （0.01を掛けると、床関数の前に誤差が入って1小さくなる場合があるため）。computeAssen と枝刈りの共通関数（Workerにも渡す）。 */
+function qbShouhiENJikkouFn(qbShouhiEN, boosterKouritsuHosei) {
+  return Math.floor((qbShouhiEN * (200 - boosterKouritsuHosei)) / 100);
+}
 
 // parts: { P1:{...}, P2:{...}, ..., P7:{...}, P8:{...}, P9: {...}|null, P10:{...}, P11:{...} }
 // isTank は parts.P8.脚部タイプ === "TANK" から判定。P9はTANK時null。
@@ -671,7 +796,6 @@ function computeAssen(parts) {
   const arms = parts.P7;
   const gen = parts.P11;
   const isTank = legs["脚部タイプ"] === "TANK";
-  const booster = isTank ? null : parts.P9;
 
   const basic = {};
   for (const s of ["AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能"]) {
@@ -706,29 +830,19 @@ function computeAssen(parts) {
   const kinsetsuBukiTekisei = num(arms["近接武器適性"]);
   const missileLockHosei = num(parts.P10["ミサイルロック補正"]);
 
-  let qbShouhiEN, qbReloadTime, qbReloadHoshou, suiryoku, qbSuiryoku, abSuiryoku, joushouSuiryoku;
-  if (isTank) {
-    qbShouhiEN = num(legs["QB消費EN"]);
-    qbReloadTime = num(legs["QBリロード時間"]);
-    qbReloadHoshou = num(legs["QBリロード保証重量"]);
-    suiryoku = num(legs["推力"]);
-    qbSuiryoku = num(legs["QB推力"]);
-    abSuiryoku = num(legs["AB推力"]);
-    joushouSuiryoku = num(legs["上昇推力"]);
-  } else {
-    qbShouhiEN = num(booster["QB消費EN"]);
-    qbReloadTime = num(booster["QBリロード時間"]);
-    qbReloadHoshou = num(booster["QBリロード保証重量"]);
-    suiryoku = num(booster["推力"]);
-    qbSuiryoku = num(booster["QB推力"]);
-    abSuiryoku = num(booster["AB推力"]);
-    joushouSuiryoku = num(booster["上昇推力"]);
-  }
+  // 推力・QBの数値の参照元：TANK脚部のときは脚部（P8）から、そうでないときはブースター（P9）から取る（アセン指標07e）。
+  const thrustSrc = isTank ? legs : parts.P9;
+  const qbShouhiEN = num(thrustSrc["QB消費EN"]);
+  const qbReloadTime = num(thrustSrc["QBリロード時間"]);
+  const qbReloadHoshou = num(thrustSrc["QBリロード保証重量"]);
+  const suiryoku = num(thrustSrc["推力"]);
+  const qbSuiryoku = num(thrustSrc["QB推力"]);
+  const abSuiryoku = num(thrustSrc["AB推力"]);
+  const joushouSuiryoku = num(thrustSrc["上昇推力"]);
 
   // (0)(1)
-  const enHojuuChienKihon = 0.01 * Math.round((100 * 1000) / enHojuuSeinou);
-  const enHojuuChien = 0.01 * Math.round(100 * enHojuuChienKihon * (2 - genKyoukyuuHosei / 100));
-  const kyoukyuuFukugenChien = 0.01 * Math.round(100 * (1000 / kyoukyuuFukugenSeinou) * (2 - genKyoukyuuHosei / 100));
+  const enHojuuChien = enHojuuChienFn(enHojuuSeinou, genKyoukyuuHosei);
+  const kyoukyuuFukugenChien = kyoukyuuFukugenChienFn(kyoukyuuFukugenSeinou, genKyoukyuuHosei);
 
   // (2)
   const enFukaGoukei = enFukaBasic;
@@ -738,15 +852,10 @@ function computeAssen(parts) {
   const enYojou = enShutsuryokuJikkou - enFukaGoukei;
 
   // (5) アセン指標03.txt改訂版の式（EN余剰の区分線形回帰式に変更）
-  let enKyoukyuuKouritsu;
-  if (enYojou < 0) enKyoukyuuKouritsu = 100;
-  else if (enYojou < 1800) enKyoukyuuKouritsu = 1500 + (75 / 18) * enYojou;
-  else if (enYojou < 3500) enKyoukyuuKouritsu = 9000 + (75 / 17) * (enYojou - 1800);
-  else enKyoukyuuKouritsu = 16500;
-  enKyoukyuuKouritsu = Math.floor(enKyoukyuuKouritsu);
+  const enKyoukyuuKouritsu = enKyoukyuuKouritsuFn(enYojou);
 
   // (6)
-  const qbShouhiENJikkou = Math.floor(qbShouhiEN * 0.01 * (200 - boosterKouritsuHosei));
+  const qbShouhiENJikkou = qbShouhiENJikkouFn(qbShouhiEN, boosterKouritsuHosei);
 
   // (7)
   const keikoku1 = enYojou <= 0 ? "EN出力不足" : null;
@@ -762,20 +871,8 @@ function computeAssen(parts) {
 
   // (11)
   const choukaJuuryou = Math.max(W - qbReloadHoshou, 0);
-  let y;
-  if (choukaJuuryou <= 0) {
-    y = 0;
-  } else {
-    // アセン指標04b.txt改訂版の係数（a=2に修正、50000以上の区分を追加）
-    let a_, b_;
-    if (choukaJuuryou < 5000) { a_ = 2; b_ = 0; }
-    else if (choukaJuuryou < 10000) { a_ = 4; b_ = -0.1; }
-    else if (choukaJuuryou < 30000) { a_ = 8.5; b_ = -0.55; }
-    else if (choukaJuuryou < 50000) { a_ = 2.5; b_ = 1.25; }
-    else { a_ = 0; b_ = 2.5; }
-    y = (a_ * choukaJuuryou) / 100000 + b_;
-  }
-  const qbReloadJikkou = 0.01 * Math.round(100 * (1 + y) * qbReloadTime);
+  const y = yQBReloadFunc(choukaJuuryou);
+  const qbReloadJikkou = Math.round(100 * (1 + y) * qbReloadTime) / 100;
 
   // (12)(13)(14)
   const udebuGoukei = num(parts.P1["重量"]) + num(parts.P2["重量"]);
@@ -783,27 +880,12 @@ function computeAssen(parts) {
   const keikoku3 = udebuChouka > 0 ? "腕部積載超過" : null;
 
   // (15)
-  let anteiKaifukuRaw;
-  if (W < 40000) anteiKaifukuRaw = 150;
-  else if (W < 80000) anteiKaifukuRaw = 209.5 - (1.5 * W) / 1000;
-  else if (W < 110000) anteiKaifukuRaw = 169.5 - (1.0 * W) / 1000;
-  else if (W < 120000) anteiKaifukuRaw = 59;
-  else if (W < 130000) anteiKaifukuRaw = 58;
-  else anteiKaifukuRaw = 57;
-  const anteiKaifuku = Math.round(anteiKaifukuRaw);
+  const anteiKaifuku = anteiKaifukuFunc(W);
 
   // (16)
-  const sap = shagekiBukiTekisei;
-  let STS;
-  if (sap < 50) STS = (sap * 8) / 5;
-  else if (sap < 150) STS = 70 + sap * 0.2;
-  else STS = 40 + sap * 0.4;
+  const STS = stsFunc(shagekiBukiTekisei);
   const x = (udebuGoukei - armsUdebuJougen) / armsUdebuJougen;
-  let yy;
-  if (x < 0) yy = 1 - x * 0;
-  else if (x < 0.2) yy = 1 - x * 2.5;
-  else if (x < 0.21) yy = 4.5 - x * 20;
-  else yy = 0.3667 - x * 0.3172;
+  const yy = yyFunc(x);
   const shoujunTsuijuu = Math.floor(yy * STS);
 
   // (17)
@@ -836,11 +918,12 @@ function computeAssen(parts) {
   const joushouBoostSpeed = Math.floor(srv * rv0 * joushouSuiryoku);
 
   // (20)(21)
-  const enKanzenKaifukuTsujou = enHojuuChien + 0.01 * Math.round((100 * enYouryou) / enKyoukyuuKouritsu);
-  const enKanzenKaifukuFukugen = kyoukyuuFukugenChien + 0.01 * Math.round((100 * (enYouryou - fukugenHojuuEN)) / enKyoukyuuKouritsu);
+  // 完全回復時間：補充遅延（1/100単位の整数）と回復分（同）を整数のまま足してから100で割る
+  const enKanzenKaifukuTsujou = (Math.round(enHojuuChien * 100) + Math.round((100 * enYouryou) / enKyoukyuuKouritsu)) / 100;
+  const enKanzenKaifukuFukugen = (Math.round(kyoukyuuFukugenChien * 100) + Math.round((100 * (enYouryou - fukugenHojuuEN)) / enKyoukyuuKouritsu)) / 100;
 
   // (22) QB5回回復時間（通常）
-  const qb5kaiKaifukuTsujou = enHojuuChien + 0.01 * Math.round((100 * (5 * qbShouhiENJikkou)) / enKyoukyuuKouritsu);
+  const qb5kaiKaifukuTsujou = (Math.round(enHojuuChien * 100) + Math.round((100 * (5 * qbShouhiENJikkou)) / enKyoukyuuKouritsu)) / 100;
 
   const warnings = [keikoku1, keikoku2, keikoku3].filter(Boolean);
   const warningStr = warnings.length ? warnings.join(", ") : "異常なし";
@@ -874,7 +957,9 @@ function computeAssen(parts) {
 
 /* ---------- 2. 表示順序・指標メタ情報 ---------- */
 // dir: "higher"=高いほうが良い / "lower"=低いほうが良い / "warning"=警告(なしが良い) / 未指定=評価なし（アセン指標03.txt準拠）
-// 全指標の定義（ラベル・評価方向・表示丸め属性）。表示順序はこれとは別に PATTERN_A/B/C_KEYS で管理する（アセン指標06.txt [3]参照）。
+// 全指標の定義（ラベル・評価方向・表示丸め属性）。表示順序はこれとは別に PATTERN_A/B/C_KEYS で管理する。
+// noFilter: true の指標は、パネル5「検索条件設定(指標)」の条件テーブルに出さない（並び替え・２軸表示の選択肢には出る）。
+// ※noFilter を付ける／外すと、共有リンクに含まれる検索条件の数が変わるため、STATE_SCHEMA_VERSION を上げること（下の共有リンクの節を参照）。
 const INDICATOR_DEFS_LIST = [
   { k: "AP", label: "AP", dir: "higher" },
   { k: "耐弾防御", label: "耐弾防御", dir: "higher" },
@@ -896,12 +981,12 @@ const INDICATOR_DEFS_LIST = [
   { k: "復元時補充EN", label: "復元時補充EN", dir: "higher" },
   { k: "重量", label: "重量", dir: "lower" },
   { k: "警告", label: "警告", isWarning: true, dir: "warning" },
-  { k: "腕部積載合計", label: "腕部積載合計", dir: "lower" },
-  { k: "腕部積載上限", label: "腕部積載上限", dir: "higher" },
-  { k: "積載重量", label: "積載重量", dir: "lower" },
-  { k: "積載上限", label: "積載上限", dir: "higher" },
-  { k: "EN負荷", label: "EN負荷", dir: "lower" },
-  { k: "EN出力実効値", label: "EN出力", round: true, dir: "higher" },
+  { k: "腕部積載合計", label: "腕部積載合計", noFilter: true, dir: "lower" },
+  { k: "腕部積載上限", label: "腕部積載上限", noFilter: true, dir: "higher" },
+  { k: "積載重量", label: "積載重量", noFilter: true, dir: "lower" },
+  { k: "積載上限", label: "積載上限", noFilter: true, dir: "higher" },
+  { k: "EN負荷", label: "EN負荷", noFilter: true, dir: "lower" },
+  { k: "EN出力実効値", label: "EN出力", round: true, noFilter: true, dir: "higher" },
   { k: "反動制御", label: "反動制御", dir: "higher" },
   { k: "AB速度", label: "AB速度", approx: true, dir: "higher" },
   { k: "ホバー速度", label: "ホバー速度", approx: true, dir: "higher" },
@@ -921,7 +1006,7 @@ const INDICATOR_DEFS_LIST = [
 const INDICATOR_DEFS = {};
 INDICATOR_DEFS_LIST.forEach((d) => { INDICATOR_DEFS[d.k] = d; });
 
-// [3-1]パターンA（アセン指標07.txt準拠、パネル4・8のデフォルト表示順）
+// パターンA（アセン指標07.txt準拠、パネル4・8のデフォルト表示順）
 const PATTERN_A_KEYS = [
   "AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能", "安定回復補正", "照準追従性能",
   "ブースト速度", "QB速度", "QB消費EN実効値", "QBリロード時間実効値",
@@ -930,7 +1015,7 @@ const PATTERN_A_KEYS = [
   "ミサイルロック補正", "AB速度", "ホバー速度", "連続QB回数",
   "EN完全回復時間通常", "EN完全回復時間復元", "QB5回回復時間通常",
 ];
-// [3-2]パターンB（アセン指標07.txt準拠、パネル4・8の表示Bタブ）
+// パターンB（アセン指標07.txt準拠、パネル4・8の表示Bタブ）
 const PATTERN_B_KEYS = [
   "AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能", "安定回復補正",
   "システム復元性能", "照準追従性能", "射撃武器適性", "反動制御", "近接武器適性", "EN射撃武器適性", "ミサイルロック補正",
@@ -939,7 +1024,7 @@ const PATTERN_B_KEYS = [
   "EN完全回復時間通常", "EN完全回復時間復元",
   "実弾攻撃許容量", "EN攻撃許容量", "爆発攻撃許容量",
 ];
-// [3-3]パターンC（アセン指標07.txt準拠、パネル5の条件・パネル7のソート対象/２軸表示の軸選択で使用）
+// パターンC（アセン指標07.txt準拠、パネル5の条件・パネル7のソート対象/２軸表示の軸選択で使用）
 const PATTERN_C_KEYS = [
   "AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能", "安定回復補正", "照準追従性能", "射撃武器適性",
   "反動制御", "ミサイルロック補正",
@@ -954,7 +1039,7 @@ const PATTERN_C_KEYS = [
 const PATTERN_A_ORDER = PATTERN_A_KEYS.map((k) => INDICATOR_DEFS[k]);
 const PATTERN_B_ORDER = PATTERN_B_KEYS.map((k) => INDICATOR_DEFS[k]);
 const PATTERN_C_ORDER = PATTERN_C_KEYS.map((k) => INDICATOR_DEFS[k]);
-// [3-4]パターンD（アセン指標07c.txt準拠、パネル3の表示順。表示A/Bのタブはなく、この順序のみで固定表示する。
+// パターンD（アセン指標07c.txt準拠、パネル3の表示順。表示A/Bのタブはなく、この順序のみで固定表示する。
 // nullは「（空白行）」を表す）
 const PATTERN_D_KEYS = [
   "AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能", "安定回復補正", null,
@@ -965,7 +1050,7 @@ const PATTERN_D_KEYS = [
   "腕部積載合計", "腕部積載上限", "積載重量", "積載上限", "EN負荷", "EN出力実効値",
 ];
 const PATTERN_D_ORDER = PATTERN_D_KEYS.map((k) => (k === null ? { blank: true } : INDICATOR_DEFS[k]));
-// [3-5]パターンE（アセン指標07b.txt準拠、パネル4の表示順。表示A/Bのタブはなく、この順序のみで固定表示する。
+// パターンE（アセン指標07b.txt準拠、パネル4の表示順。表示A/Bのタブはなく、この順序のみで固定表示する。
 // nullは「（空白行）」を表す）
 const PATTERN_E_KEYS = [
   "システム復元性能", null,
@@ -982,8 +1067,8 @@ const PATTERN_E_ORDER = PATTERN_E_KEYS.map((k) => (k === null ? { blank: true } 
 const DISPLAY_ORDER = PATTERN_C_ORDER;
 const FILTERABLE_INDICATORS = DISPLAY_ORDER.filter((d) => d.k && !d.isWarning).map((d) => ({ k: d.k, label: d.label, dir: d.dir }));
 const APPROX_KEYS = new Set(INDICATOR_DEFS_LIST.filter((d) => d.approx).map((d) => d.k));
-// パネル5「検索条件設定(指標)」の条件テーブルから除外する指標（並び順の選択肢からは除外しない）
-const FILTER_EXCLUDED_KEYS = new Set(["腕部積載合計", "腕部積載上限", "積載重量", "積載上限", "EN負荷", "EN出力実効値"]);
+// パネル5「検索条件設定(指標)」の条件テーブルから除外する指標（並び順の選択肢からは除外しない）。INDICATOR_DEFS_LIST の noFilter: true から導く。
+const FILTER_EXCLUDED_KEYS = new Set(INDICATOR_DEFS_LIST.filter((d) => d.noFilter).map((d) => d.k));
 const PRE_SEARCH_FILTER_INDICATORS = FILTERABLE_INDICATORS.filter((ind) => !FILTER_EXCLUDED_KEYS.has(ind.k));
 // パネル4・8（指標表示1/2）の表示A/表示Bタブで使う順序を返す
 function getDisplayPatternOrder(pattern) {
@@ -998,6 +1083,10 @@ function getPanel8OrderKeys(pattern) {
 // 上記をINDICATOR_DEFSオブジェクトの配列に変換したもの（renderComparisonTableに渡す用）
 function getPanel8Order(pattern) {
   return getPanel8OrderKeys(pattern).map((k) => INDICATOR_DEFS[k]);
+}
+function getPanel12Order(pattern) {
+  const keys = panel12CustomOrderKeys[pattern] || (pattern === "B" ? PATTERN_B_KEYS : PATTERN_A_KEYS);
+  return keys.map((k) => INDICATOR_DEFS[k]);
 }
 
 /* 数値表示：桁区切りカンマなし。
@@ -1053,7 +1142,26 @@ function checkAssenRuleViolations(sel) {
    ========================================================================= */
 const assen0Sel = {};
 for (const cat of CATS) assen0Sel[cat] = DATA.categories[cat][0].part_name;
-let lastChangedCat = "P1";
+
+/* パネル2のパーツ選択（ドロップダウン）の選択肢を作り、現在のアセン0の状態を選択値にする。
+   P9（BOOSTER）は、TANK脚部のときだけ「（非搭載）」を選択肢に含める（非TANK時にこの値を選べてしまうと不正な組み合わせになるため）。
+   renderPanel2() が全カテゴリ分を作るときと、TANK脚部⇔P9の補正でP9だけを作り直すとき（onAssen0Changed）の両方で使う。 */
+function fillPartSelect(sel, cat) {
+  sel.textContent = "";
+  if (cat === "P9" && isTankLeg(getPart("P8", assen0Sel.P8))) {
+    const noneOpt = document.createElement("option");
+    noneOpt.value = "";
+    noneOpt.textContent = "（非搭載）";
+    sel.appendChild(noneOpt);
+  }
+  for (const part of DATA.categories[cat]) {
+    const opt = document.createElement("option");
+    opt.value = part.part_name;
+    opt.textContent = partDisplayName(part);
+    sel.appendChild(opt);
+  }
+  sel.value = assen0Sel[cat] || "";
+}
 
 function renderPanel2() {
   const body = document.getElementById("panel2-dynamic");
@@ -1068,23 +1176,9 @@ function renderPanel2() {
     label.title = cat + "：" + DATA.labels[cat];
     const sel = document.createElement("select");
     sel.id = "p2-sel-" + cat;
-    if (cat === "P9" && isTankLeg(getPart("P8", assen0Sel.P8))) {
-      // TANK脚部選択時のみ「（非搭載）」を選択肢に含める（非TANK時にこの値を選べてしまうと不正な組み合わせになるため）
-      const noneOpt = document.createElement("option");
-      noneOpt.value = "";
-      noneOpt.textContent = "（非搭載）";
-      sel.appendChild(noneOpt);
-    }
-    for (const part of DATA.categories[cat]) {
-      const opt = document.createElement("option");
-      opt.value = part.part_name;
-      opt.textContent = partDisplayName(part);
-      sel.appendChild(opt);
-    }
-    sel.value = assen0Sel[cat] || "";
+    fillPartSelect(sel, cat);
     sel.addEventListener("change", () => {
       assen0Sel[cat] = sel.value === "" ? null : sel.value;
-      lastChangedCat = cat;
       onAssen0Changed();
     });
     const specBtn = document.createElement("button");
@@ -1179,32 +1273,40 @@ function onNameDisplayModeChanged() {
   renderPanel2();
   const fixedContainer = document.getElementById("p6-fixed");
   if (fixedContainer) renderFixedConditions(fixedContainer);
-  if (currentDisplayedResult) renderPanel7Parts(currentDisplayedResult);
+  if (selectedResult) renderPanel7Parts(selectedResult);
+  renderPanel11Parts();
+  renderPanel10();
 }
 
+/* アセン選択状態のTANK脚部とP9（BOOSTER）の整合を取る（状態の補正。描画はしない）。
+   ・P8がTANK脚部のとき：P9を（非搭載＝null）にする。
+   ・P8がTANK以外で、P9が（非搭載）のとき（TANKから戻ったときなど）：先頭のブースターを補う。
+   sel を直接書き換え、書き換えたら true を返す。アセン0に限らず、同じ形のオブジェクト（共有リンクの復元途中のものなど）にも使える。
+   ※P9のドロップダウンの選択肢（「（非搭載）」の有無）は、状態が変わったあとの renderPanel2() で反映される。 */
+function normalizeAssen0Sel(sel) {
+  if (isTankLeg(getPart("P8", sel.P8))) {
+    if (sel.P9 !== null) {
+      sel.P9 = null;
+      return true;
+    }
+  } else if (sel.P9 === null) {
+    sel.P9 = DATA.categories.P9[0].part_name;
+    return true;
+  }
+  return false;
+}
+
+/* パネル2のP9ドロップダウンの有効／無効を、現在の状態（P8がTANKか）に合わせる（表示だけ。状態は書き換えない）。 */
 function updateP1TankLock() {
-  const p8 = getPart("P8", assen0Sel.P8);
   const p9sel = document.getElementById("p2-sel-P9");
   if (!p9sel) return;
-  if (isTankLeg(p8)) {
-    if (assen0Sel.P9 !== null) {
-      // TANK脚部のときはP9を（非搭載）に統一する。選択肢自体（「（非搭載）」オプション）も
-      // 反映する必要があるため、パネル2全体を再構築する（renderPanel2()の末尾で本関数が再度呼ばれ、
-      // 2回目の呼び出しでは下のdisabled化のみが行われて完了する）。
-      assen0Sel.P9 = null;
-      renderPanel2();
-      return;
-    }
+  // いったん属性を外してから付け直す（作り直した要素と、既存の要素に再設定した場合とで、属性の並びが同じになる）
+  p9sel.removeAttribute("disabled");
+  p9sel.removeAttribute("title");
+  if (isTankLeg(getPart("P8", assen0Sel.P8))) {
     p9sel.disabled = true;
     p9sel.title = "TANK脚部のため装備不可（ブースターなしで計算されます）";
   } else {
-    if (assen0Sel.P9 === null) {
-      // TANKから非TANKに戻ったとき、（非搭載）のままでは非TANK脚部として不正な組み合わせになるため、
-      // 先頭のブースターをデフォルトとして補う。
-      assen0Sel.P9 = DATA.categories.P9[0].part_name;
-      renderPanel2();
-      return;
-    }
     p9sel.disabled = false;
     p9sel.title = "";
   }
@@ -1234,7 +1336,7 @@ function updateP1RuleWarning() {
   }
 }
 
-// パーツ1件分のスペックHTMLを生成する（パネル2・10の各SPECボタン、パネル3、11章のSPEC4/8/9モーダルで共用）。
+// パーツ1件分のスペックHTMLを生成する（パネル2・10の各SPECボタン、パネル3、SPEC4/8/9モーダルで共用）。
 // パネル3(PARTS SPEC)は表示切替の対象外とし、正式名称・通称を常に両方表示する。
 // partNameが（非搭載＝null/空）の場合はnullを返す（呼び出し側で「表示しない」扱いにする）。
 function buildPartSpecHtmlForPart(cat, partName) {
@@ -1275,17 +1377,36 @@ function renderPanel3() { renderAcSpecPanel("panel3-dynamic", PATTERN_D_ORDER); 
 
 function renderPanel4() { renderAcSpecPanel("panel4-dynamic", PATTERN_E_ORDER); }
 
-function onAssen0Changed() {
-  updateP1TankLock();
-  updateP1RuleWarning();
+/* アセン0に依存するパネル（パネル3・4・11のパーツ一覧・12・10、および結果選択中ならパネル8）を、現在のアセン0の状態に合わせて再描画する。
+   アセン0を変更した場合、既に検索結果を選択して比較表示中であれば、比較の基準側（アセン0）の値も最新の状態に合わせて再描画する。 */
+function renderAssen0Dependents() {
   renderPanel3();
   renderPanel4();
-  // アセン0を変更した場合、既に検索結果を選択して比較表示中であれば、
-  // 比較の基準側（アセン0）の値も最新の状態に合わせて再描画する。
   if (selectedResult) {
     renderPanel8(selectedResult);
   }
+  renderPanel12();
+  renderPanel11Parts();
   renderPanel10();
+}
+
+/* アセン0の選択状態（assen0Sel）を丸ごと差し替えたあと（プリセット適用・スロット読込・起動時）の再描画。
+   TANK脚部⇔P9の補正 → パネル2を再構築 → アセン0に依存するパネルを再描画する。 */
+function refreshAssen0() {
+  normalizeAssen0Sel(assen0Sel);
+  renderPanel2();
+  renderAssen0Dependents();
+}
+
+/* パネル2のパーツを1つ変更したときの再描画（パネル2は作り直さない。TANK脚部⇔P9の補正で状態が変わったときは、P9のドロップダウンだけ作り直す）。 */
+function onAssen0Changed() {
+  resetPresetSelect();
+  // TANK脚部⇔P9の補正で状態が変わったときは、P9の選択肢（「（非搭載）」の有無）と選択値だけを作り直す。
+  // パネル2全体は作り直さないので、操作中の脚部ドロップダウンのフォーカスは外れない。
+  if (normalizeAssen0Sel(assen0Sel)) fillPartSelect(document.getElementById("p2-sel-P9"), "P9");
+  updateP1TankLock();
+  updateP1RuleWarning();
+  renderAssen0Dependents();
 }
 
 /* =========================================================================
@@ -1594,6 +1715,8 @@ function pruneSpeedIndicator(dims, filters, key, computeForPair) {
   });
 }
 
+/* QBリロード時間の補正値 y（アセン指標07e (11)）：超過重量 chouka（＝重量－QBリロード保証重量。0以上）の区分線形式。
+   computeAssen と枝刈り（QBリロード時間の上下限）の両方から呼ぶ共通関数（Workerにも渡す。funcs に登録）。 */
 function yQBReloadFunc(chouka) {
   if (chouka <= 0) return 0;
   let a_, b_;
@@ -1605,6 +1728,8 @@ function yQBReloadFunc(chouka) {
   return (a_ * chouka) / 100000 + b_;
 }
 
+/* 安定回復補正（アセン指標07e (15)）：重量Wの区分線形式を四捨五入した値。
+   computeAssen と枝刈り（pruneWeightDerivedGeneric）の両方から呼ぶ共通関数（Workerにも渡す。funcs に登録）。 */
 function anteiKaifukuFunc(W) {
   let raw;
   if (W < 40000) raw = 150;
@@ -1617,6 +1742,22 @@ function anteiKaifukuFunc(W) {
 }
 const ANTEI_KAIFUKU_BREAKS = [40000, 80000, 110000, 120000, 130000];
 
+/* 照準追従性能（アセン指標07e (16)）：射撃武器適性 sap から、基準値STSを求める。
+   computeAssen と枝刈り（pruneShoujunTsuijuu）の両方から呼ぶ共通関数（Workerにも渡す。funcs に登録）。 */
+function stsFunc(sap) {
+  if (sap < 50) return (sap * 8) / 5;
+  if (sap < 150) return 70 + sap * 0.2;
+  return 40 + sap * 0.4;
+}
+
+/* 照準追従性能（アセン指標07e (16)）：腕部積載の超過度合い x から、重量超過補正 yy を求める。共通関数（上と同じ）。 */
+function yyFunc(x) {
+  if (x < 0) return 1 - x * 0;
+  if (x < 0.2) return 1 - x * 2.5;
+  if (x < 0.21) return 4.5 - x * 20;
+  return 0.3667 - x * 0.3172;
+}
+
 /* 照準追従性能：P7(ARMS)候補ごとに、腕部積載合計(P1+P2、既知の範囲)からxの範囲を作り、yyの理論上下限を評価する */
 function pruneShoujunTsuijuu(dims, filters) {
   const f = filters.find((x) => x.k === "照準追従性能");
@@ -1625,22 +1766,12 @@ function pruneShoujunTsuijuu(dims, filters) {
   const p2Bound = listMinMax(dims.P2list, (p) => num(p["重量"]));
   const udebuMin = p1Bound.min + p2Bound.min;
   const udebuMax = p1Bound.max + p2Bound.max;
-  const yyFn = (x) => {
-    if (x < 0) return 1 - x * 0;
-    if (x < 0.2) return 1 - x * 2.5;
-    if (x < 0.21) return 4.5 - x * 20;
-    return 0.3667 - x * 0.3172;
-  };
   dims.P7list = dims.P7list.filter((p) => {
-    const sap = num(p["射撃武器適性"]);
-    let STS;
-    if (sap < 50) STS = (sap * 8) / 5;
-    else if (sap < 150) STS = 70 + sap * 0.2;
-    else STS = 40 + sap * 0.4;
+    const STS = stsFunc(num(p["射撃武器適性"]));
     const jougen = num(p["腕部積載上限"]);
     const xLo = (udebuMin - jougen) / jougen;
     const xHi = (udebuMax - jougen) / jougen;
-    const { min: yyMin, max: yyMax } = evalOverInterval(yyFn, xLo, xHi, [0, 0.2, 0.21]);
+    const { min: yyMin, max: yyMax } = evalOverInterval(yyFunc, xLo, xHi, [0, 0.2, 0.21]);
     const valMin = Math.floor(yyMin * STS);
     const valMax = Math.floor(yyMax * STS);
     return f.op === "gte" ? valMax >= f.v : valMin <= f.v;
@@ -1703,12 +1834,6 @@ function pruneWarning3(dims, allowW3) {
 function pruneEnKyoukyuuKouritsu(dims, filters) {
   const f = filters.find((x) => x.k === "EN供給効率");
   if (!f) return;
-  const enKyoukyuuFn = (enYojou) => {
-    if (enYojou < 0) return 100;
-    if (enYojou < 1800) return Math.floor(1500 + (75 / 18) * enYojou);
-    if (enYojou < 3500) return Math.floor(9000 + (75 / 17) * (enYojou - 1800));
-    return 16500;
-  };
   const breaks = [0, 1800, 3500];
 
   const loadGroups = buildSumGroups(dims, "EN負荷", false);
@@ -1720,14 +1845,14 @@ function pruneEnKyoukyuuKouritsu(dims, filters) {
     const enShutsuryoku = num(p["EN出力"]);
     const enOutLo = Math.floor((enShutsuryoku * p6HoseiBound.min) / 100);
     const enOutHi = Math.floor((enShutsuryoku * p6HoseiBound.max) / 100);
-    const { min, max } = evalOverInterval(enKyoukyuuFn, enOutLo - loadMax, enOutHi - loadMin, breaks);
+    const { min, max } = evalOverInterval(enKyoukyuuKouritsuFn, enOutLo - loadMax, enOutHi - loadMin, breaks);
     return f.op === "gte" ? max >= f.v : min <= f.v;
   });
   dims.P6list = dims.P6list.filter((p) => {
     const hosei = num(p["ジェネレータ出力補正"]);
     const enOutLo = Math.floor((p11ShutsuryokuBound.min * hosei) / 100);
     const enOutHi = Math.floor((p11ShutsuryokuBound.max * hosei) / 100);
-    const { min, max } = evalOverInterval(enKyoukyuuFn, enOutLo - loadMax, enOutHi - loadMin, breaks);
+    const { min, max } = evalOverInterval(enKyoukyuuKouritsuFn, enOutLo - loadMax, enOutHi - loadMin, breaks);
     return f.op === "gte" ? max >= f.v : min <= f.v;
   });
   const enOutMin = Math.floor((p11ShutsuryokuBound.min * p6HoseiBound.min) / 100);
@@ -1737,7 +1862,7 @@ function pruneEnKyoukyuuKouritsu(dims, filters) {
     const otherMax = loadMax - lb[i].max;
     g.list = g.list.filter((item) => {
       const own = g.valueFn(item);
-      const { min, max } = evalOverInterval(enKyoukyuuFn, enOutMin - (own + otherMax), enOutMax - (own + otherMin), breaks);
+      const { min, max } = evalOverInterval(enKyoukyuuKouritsuFn, enOutMin - (own + otherMax), enOutMax - (own + otherMin), breaks);
       return f.op === "gte" ? max >= f.v : min <= f.v;
     });
   });
@@ -1757,22 +1882,20 @@ function pruneEnChainIndicators(dims, filters) {
   const enHojuuChienBound = twoVarBound(dims,
     { listKey: "P11list", valueFn: (p) => num(p["EN補充性能"]) },
     { listKey: "P6list", valueFn: (p) => num(p["ジェネレータ供給補正"]) },
-    (a, b) => {
-      const kihon = 0.01 * Math.round((100 * 1000) / a);
-      return 0.01 * Math.round(100 * kihon * (2 - b / 100));
-    }
+    enHojuuChienFn
   );
   const kyoukyuuFukugenChienBound = twoVarBound(dims,
     { listKey: "P11list", valueFn: (p) => num(p["供給復元性能"]) },
     { listKey: "P6list", valueFn: (p) => num(p["ジェネレータ供給補正"]) },
-    (a, b) => (1000 / a) * (2 - b / 100)
+    // computeAssen と同じ共通関数（丸めを含む）を使う。丸めが無いと、境界ちょうどのアセンが枝刈りで消える。
+    kyoukyuuFukugenChienFn
   );
   const enYouryouBound = listMinMax(dims.P11list, (p) => num(p["EN容量"]));
   const fukugenHojuuENBound = listMinMax(dims.P11list, (p) => num(p["復元時補充EN"]));
   const qbShouhiENJikkouBound = twoVarBound(dims,
     { listKey: "pairList", valueFn: (pair) => (pair.p9 ? num(pair.p9["QB消費EN"]) : num(pair.p8["QB消費EN"])) },
     { listKey: "P6list", valueFn: (p) => num(p["ブースタ効率補正"]) },
-    (qb, hosei) => Math.floor(qb * 0.01 * (200 - hosei))
+    qbShouhiENJikkouFn
   );
 
   const loadGroups = buildSumGroups(dims, "EN負荷", false);
@@ -1781,13 +1904,10 @@ function pruneEnChainIndicators(dims, filters) {
   const p6HoseiBound = listMinMax(dims.P6list, (p) => num(p["ジェネレータ出力補正"]));
   const enOutMin = Math.floor((p11ShutsuryokuBound.min * p6HoseiBound.min) / 100);
   const enOutMax = Math.floor((p11ShutsuryokuBound.max * p6HoseiBound.max) / 100);
-  const enKyoukyuuFn = (enYojou) => {
-    if (enYojou < 0) return 100;
-    if (enYojou < 1800) return Math.floor(1500 + (75 / 18) * enYojou);
-    if (enYojou < 3500) return Math.floor(9000 + (75 / 17) * (enYojou - 1800));
-    return 16500;
-  };
-  const enKyoukyuuBound = evalOverInterval(enKyoukyuuFn, enOutMin - loadMax, enOutMax - loadMin, [0, 1800, 3500]);
+  const enKyoukyuuBound = evalOverInterval(enKyoukyuuKouritsuFn, enOutMin - loadMax, enOutMax - loadMin, [0, 1800, 3500]);
+
+  // 1/100単位の整数（補充遅延・供給復元遅延の上下限は、すでに n/100 の形）
+  const centi = (v) => Math.round(v * 100);
 
   function feasible(key) {
     const f = filters.find((x) => x.k === key);
@@ -1795,18 +1915,18 @@ function pruneEnChainIndicators(dims, filters) {
     let bound;
     if (key === "EN完全回復時間通常") {
       bound = {
-        min: enHojuuChienBound.min + enYouryouBound.min / enKyoukyuuBound.max,
-        max: enHojuuChienBound.max + enYouryouBound.max / enKyoukyuuBound.min,
+        min: (centi(enHojuuChienBound.min) + Math.round((100 * enYouryouBound.min) / enKyoukyuuBound.max)) / 100,
+        max: (centi(enHojuuChienBound.max) + Math.round((100 * enYouryouBound.max) / enKyoukyuuBound.min)) / 100,
       };
     } else if (key === "EN完全回復時間復元") {
       bound = {
-        min: kyoukyuuFukugenChienBound.min + (enYouryouBound.min - fukugenHojuuENBound.max) / enKyoukyuuBound.max,
-        max: kyoukyuuFukugenChienBound.max + (enYouryouBound.max - fukugenHojuuENBound.min) / enKyoukyuuBound.min,
+        min: (centi(kyoukyuuFukugenChienBound.min) + Math.round((100 * (enYouryouBound.min - fukugenHojuuENBound.max)) / enKyoukyuuBound.max)) / 100,
+        max: (centi(kyoukyuuFukugenChienBound.max) + Math.round((100 * (enYouryouBound.max - fukugenHojuuENBound.min)) / enKyoukyuuBound.min)) / 100,
       };
     } else if (key === "QB5回回復時間通常") {
       bound = {
-        min: enHojuuChienBound.min + (5 * qbShouhiENJikkouBound.min) / enKyoukyuuBound.max,
-        max: enHojuuChienBound.max + (5 * qbShouhiENJikkouBound.max) / enKyoukyuuBound.min,
+        min: (centi(enHojuuChienBound.min) + Math.round((100 * (5 * qbShouhiENJikkouBound.min)) / enKyoukyuuBound.max)) / 100,
+        max: (centi(enHojuuChienBound.max) + Math.round((100 * (5 * qbShouhiENJikkouBound.max)) / enKyoukyuuBound.min)) / 100,
       };
     } else if (key === "供給復元遅延") {
       bound = kyoukyuuFukugenChienBound;
@@ -1929,15 +2049,12 @@ function pruneDims(dims, filters, allowFlags) {
   pruneTwoVarMonotonic(dims, filters, "EN補充遅延",
     { listKey: "P11list", valueFn: (p) => num(p["EN補充性能"]), dir: "dec" },
     { listKey: "P6list", valueFn: (p) => num(p["ジェネレータ供給補正"]), dir: "dec" },
-    (enHoju, genSupply) => {
-      const kihon = 0.01 * Math.round((100 * 1000) / enHoju);
-      return 0.01 * Math.round(100 * kihon * (2 - genSupply / 100));
-    }
+    enHojuuChienFn
   );
   pruneTwoVarMonotonic(dims, filters, "QB消費EN実効値",
     { listKey: "pairList", valueFn: (pair) => (pair.p9 ? num(pair.p9["QB消費EN"]) : num(pair.p8["QB消費EN"])), dir: "inc" },
     { listKey: "P6list", valueFn: (p) => num(p["ブースタ効率補正"]), dir: "dec" },
-    (qb, boostHosei) => Math.floor(0.01 * qb * (200 - boostHosei))
+    qbShouhiENJikkouFn
   );
 
   // 5. 安定回復補正（指標セット2）：既存の重量枝刈りと同じグループ構造を再利用
@@ -1962,32 +2079,32 @@ function pruneDims(dims, filters, allowFlags) {
     const coefTF = COEF_TF_MAP[pair.p8.part_name] ?? 1;
     const suiryoku = pair.p9 ? num(pair.p9["推力"]) : num(pair.p8["推力"]);
     const fn = (W) => sBoostFunc((W - sekisai - legW) / sekisai) * suiryoku * coefTF * b0Func(W);
-    const rBreaksInW = [0, 0.05, 0.1, 0.5].map((r) => r * sekisai + sekisai + legW);
-    return { fn, breaks: [40000, 62500, 75000, 80000, 120000, ...rBreaksInW] };
+    const rBreaksInW = pwlBreaks(PWL_SBOOST).map((r) => r * sekisai + sekisai + legW);
+    return { fn, breaks: [...pwlBreaks(PWL_B0), ...rBreaksInW] };
   });
   pruneSpeedIndicator(dims, filters, "上昇ブースト速度", (pair) => {
     const sekisai = num(pair.p8["積載上限"]);
     const legW = num(pair.p8["重量"]);
     const joushouSuiryoku = pair.p9 ? num(pair.p9["上昇推力"]) : num(pair.p8["上昇推力"]);
     const fn = (W) => Math.floor(srvFunc((W - sekisai - legW) / sekisai) * rv0Func(W) * joushouSuiryoku);
-    const rBreaksInW = [0, 0.05, 0.1, 0.5].map((r) => r * sekisai + sekisai + legW);
-    return { fn, breaks: [40000, 75000, 80000, 120000, ...rBreaksInW] };
+    const rBreaksInW = pwlBreaks(PWL_SRV).map((r) => r * sekisai + sekisai + legW);
+    return { fn, breaks: [...pwlBreaks(PWL_RV0), ...rBreaksInW] };
   });
   pruneSpeedIndicator(dims, filters, "QB速度", (pair) => {
     const sekisai = num(pair.p8["積載上限"]);
     const legW = num(pair.p8["重量"]);
     const qbSuiryoku = pair.p9 ? num(pair.p9["QB推力"]) : num(pair.p8["QB推力"]);
     const fn = (W) => Math.floor(sQBFunc((W - sekisai - legW) / sekisai) * q0Func(W) * qbSuiryoku);
-    const rBreaksInW = [0, 0.05, 0.1, 0.5].map((r) => r * sekisai + sekisai + legW);
-    return { fn, breaks: [40000, 62500, 75000, 80000, 120000, ...rBreaksInW] };
+    const rBreaksInW = pwlBreaks(PWL_SQB).map((r) => r * sekisai + sekisai + legW);
+    return { fn, breaks: [...pwlBreaks(PWL_Q0), ...rBreaksInW] };
   });
   pruneSpeedIndicator(dims, filters, "AB速度", (pair) => {
     const sekisai = num(pair.p8["積載上限"]);
     const legW = num(pair.p8["重量"]);
     const abSuiryoku = pair.p9 ? num(pair.p9["AB推力"]) : num(pair.p8["AB推力"]);
     const fn = (W) => sABFunc((W - sekisai - legW) / sekisai) * a0Func(W) * abSuiryoku;
-    const rBreaksInW = [0, 0.05, 0.1, 0.5].map((r) => r * sekisai + sekisai + legW);
-    return { fn, breaks: [40000, 50000, 75000, 100000, 150000, ...rBreaksInW] };
+    const rBreaksInW = pwlBreaks(PWL_SAB).map((r) => r * sekisai + sekisai + legW);
+    return { fn, breaks: [...pwlBreaks(PWL_A0), ...rBreaksInW] };
   });
   pruneSpeedIndicator(dims, filters, "ホバー速度", (pair) => {
     const HSmax = HSMAX_MAP[pair.p8.part_name] ?? 0;
@@ -1997,15 +2114,16 @@ function pruneDims(dims, filters, allowFlags) {
       if (HSmax === 0) return 0;
       return HSmax * h0Func(W / 1000) * sHoverFunc((W - sekisai - legW) / sekisai);
     };
-    const uBreaksInW = [70, 100, 110, 120].map((u) => u * 1000);
-    const rBreaksInW = [0, 0.1, 0.5].map((r) => r * sekisai + sekisai + legW);
+    const uBreaksInW = pwlBreaks(PWL_H0).map((u) => u * 1000);
+    const rBreaksInW = pwlBreaks(PWL_SHOVER).map((r) => r * sekisai + sekisai + legW);
     return { fn, breaks: [...uBreaksInW, ...rBreaksInW] };
   });
   pruneSpeedIndicator(dims, filters, "QBリロード時間実効値", (pair) => {
     const isTank = pair.p8["脚部タイプ"] === "TANK";
     const qbReloadTime = isTank ? num(pair.p8["QBリロード時間"]) : num(pair.p9["QBリロード時間"]);
     const qbReloadHoshou = isTank ? num(pair.p8["QBリロード保証重量"]) : num(pair.p9["QBリロード保証重量"]);
-    const fn = (W) => (1 + yQBReloadFunc(Math.max(W - qbReloadHoshou, 0))) * qbReloadTime;
+    // computeAssen と同じ丸め（1/100単位に四捨五入）
+    const fn = (W) => Math.round(100 * (1 + yQBReloadFunc(Math.max(W - qbReloadHoshou, 0))) * qbReloadTime) / 100;
     const choukaBreaksInW = [5000, 10000, 30000, 50000].map((c) => c + qbReloadHoshou);
     return { fn, breaks: [qbReloadHoshou, ...choukaBreaksInW] };
   });
@@ -2027,7 +2145,7 @@ function totalCandidateCount(dims) {
 }
 
 function getNArep() {
-  // (35) パネル11のNArep入力欄は削除。内部的な既定値として3を使用する(5.6.2の実測を踏まえた運用値)。
+  // (35) パネル11のNArep入力欄は削除。内部的な既定値として3を使用する(実測を踏まえた運用値)。
   return 3;
 }
 
@@ -2047,10 +2165,6 @@ function pruneDimsIterative(dims, filters, allowFlags, maxIter) {
    Panel 5: 指標条件設定
    ========================================================================= */
 const filterConditions = {}; // { key: {value:number|null, op:'gte'|'lte'} }
-let sortKey = "AP";
-let sortDir = "desc";
-let resultN = 20;
-let tradeoffN = 50; // ２軸表示専用の件数（ソート表示のresultNとは独立。20-1参照）
 
 const FILTER_STEP_OVERRIDES = {
   AP: 100, 耐弾防御: 10, 耐EN防御: 10, 耐爆防御: 10, 姿勢安定性能: 50,
@@ -2117,16 +2231,23 @@ function collectFilters() {
 /* =========================================================================
    検索条件パネル（旧Panel6）サブセクション：検索実行
    ========================================================================= */
-let currentWorker = null;
-let heldResults = []; // 検索条件(パネル5・警告フィルタ)に合致した全候補（上限件数まで保持、ソート前）
-let heldMatchedCount = 0; // 条件に合致した総数（保持上限を超えた分も含む）
-let searchResults = []; // heldResultsを並び順・件数(resultN)で絞り込んだ表示用の配列（ソート表示・パネル8で使用）
-let tradeoffResults = []; // heldResultsを並び順・件数(tradeoffN)で絞り込んだ表示用の配列（２軸表示専用。20-1参照）
 const MAX_RETAIN = 20000; // ブラウザのメモリ保護のための保持件数上限
 
+// 2つのリストの組み合わせのうち、「同じパーツ」（part_nameが同じ）でない組み合わせの数。
+// アセンルール01.txt準拠：R-ARM(P1)とR-BACK(P3)、L-ARM(P2)とL-BACK(P4)には同じパーツを選べない。
+// 全組み合わせ数から、同名の組み合わせ数（部品名ごとの出現数の積の和）を引いて求める。
+function countValidPairs(listA, listB) {
+  const countB = new Map();
+  for (const b of listB) countB.set(b.part_name, (countB.get(b.part_name) || 0) + 1);
+  let same = 0;
+  for (const a of listA) same += countB.get(a.part_name) || 0;
+  return listA.length * listB.length - same;
+}
+
+// 検索で実際に評価される組み合わせ数（禁則の組み合わせを除く）。Workerの処理件数と一致する。
 function estimateTotal(dims) {
   return (
-    dims.P1list.length * dims.P2list.length * dims.P3list.length * dims.P4list.length *
+    countValidPairs(dims.P1list, dims.P3list) * countValidPairs(dims.P2list, dims.P4list) *
     dims.P5list.length * dims.P6list.length * dims.P7list.length * dims.pairList.length *
     dims.P10list.length * dims.P11list.length
   );
@@ -2137,7 +2258,7 @@ function estimateTotal(dims) {
 // 「超長」は、最も遅い実測レート(約255,360件/秒)で15分(900秒)を超える見込みの組み合わせ数を簡易的な基準とする。
 function timeTag(total) {
   if (total <= 1000000) return { cls: "short", label: "短（数秒程度）" };
-  if (total <= 15000000) return { cls: "medium", label: "長（数十秒程度）" };
+  if (total <= 15000000) return { cls: "medium", label: "中（数十秒程度）" };
   if (total <= 230000000) return { cls: "long", label: "長（数分程度）" };
   return { cls: "extreme", label: "超長（検索非推奨）" };
 }
@@ -2223,8 +2344,8 @@ function updatePanel6Estimate() {
    ※クロージャで外部スコープの変数を参照する書き方はできない点に注意
      （現状ここで挙げている関数は全て素直な関数宣言のみで、外部依存が薄いため問題ない）。 */
 function buildSharedWorkerCode() {
-  const consts = { COEF_TF_MAP, HSMAX_MAP, STAT_CATS };
-  const funcs = [num, b0Func, sBoostFunc, q0Func, sQBFunc, a0Func, sABFunc, h0Func, sHoverFunc, rv0Func, srvFunc, computeAssen];
+  const consts = { COEF_TF_MAP, HSMAX_MAP, STAT_CATS, PWL_B0, PWL_Q0, PWL_A0, PWL_RV0, PWL_SBOOST, PWL_SQB, PWL_SAB, PWL_H0, PWL_SHOVER, PWL_SRV };
+  const funcs = [num, pwl, b0Func, sBoostFunc, q0Func, sQBFunc, a0Func, sABFunc, h0Func, sHoverFunc, rv0Func, srvFunc, enKyoukyuuKouritsuFn, enHojuuChienFn, kyoukyuuFukugenChienFn, qbShouhiENJikkouFn, anteiKaifukuFunc, stsFunc, yyFunc, yQBReloadFunc, computeAssen];
   let code = "// ===== 共通ユーティリティ（メインスレッド側の定義から自動生成。編集する場合はメインスレッド側のみを直接編集すること） =====\n";
   for (const [name, val] of Object.entries(consts)) {
     code += "const " + name + " = " + JSON.stringify(val) + ";\n";
@@ -2260,24 +2381,15 @@ self.onmessage = function (e) {
     return true;
   }
 
-  const innerBlockSize = P5list.length * P6list.length * P7list.length * pairList.length * P10list.length * P11list.length;
-
   for (const p1 of P1list) {
     for (const p2 of P2list) {
       for (const p3 of P3list) {
         // アセンルール01.txt準拠：R-ARM(P1)とR-BACK(P3)に同じパーツは選択不可
-        if (p1.part_name === p3.part_name) {
-          processed += P4list.length * innerBlockSize;
-          self.postMessage({ type: "progress", processed, total });
-          continue;
-        }
+        // （total＝estimateTotal は、この禁則の組み合わせを除いた件数。スキップ分は processed に加算しない）
+        if (p1.part_name === p3.part_name) continue;
         for (const p4 of P4list) {
           // アセンルール01.txt準拠：L-ARM(P2)とL-BACK(P4)に同じパーツは選択不可
-          if (p2.part_name === p4.part_name) {
-            processed += innerBlockSize;
-            self.postMessage({ type: "progress", processed, total });
-            continue;
-          }
+          if (p2.part_name === p4.part_name) continue;
           for (const p5 of P5list) {
             for (const p6 of P6list) {
               for (const p7 of P7list) {
@@ -2336,11 +2448,8 @@ function startSearch() {
     heldMatchedCount = 0;
     searchResults = [];
     tradeoffResults = [];
-    currentDisplayedResult = null;
     selectedResult = null;
     updateP7HitCount("0件");
-    const randomBtnZero = document.getElementById("p7-random-btn");
-    if (randomBtnZero) randomBtnZero.disabled = true;
     renderPanel10();
     return;
   }
@@ -2353,10 +2462,6 @@ function startSearch() {
   document.getElementById("p7-results").innerHTML = '<div class="empty-note">検索中です…</div>';
   document.getElementById("panel8-dynamic").innerHTML = "";
   updateP7HitCount("-");
-  const randomBtnStart = document.getElementById("p7-random-btn");
-  if (randomBtnStart) randomBtnStart.disabled = true;
-  lastRandomIndex = -1;
-  currentDisplayedResult = null;
   selectedResult = null;
   renderPanel10();
   heldResults = [];
@@ -2366,6 +2471,7 @@ function startSearch() {
 
   const blob = new Blob([WORKER_SRC], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
+  currentWorkerUrl = url;
   currentWorker = new Worker(url);
 
   currentWorker.onmessage = (e) => {
@@ -2389,9 +2495,24 @@ function startSearch() {
       heldMatchedCount = msg.matched;
       renderResultControls();
       applySortAndDisplay();
-      URL.revokeObjectURL(url);
+      releaseWorkerUrl();
       currentWorker = null;
     }
+  };
+
+  // Worker内で例外が起きたとき：「検索中」のまま固まらないよう、画面の状態を元に戻す。
+  currentWorker.onerror = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    console.error("検索Workerでエラーが発生しました:", e && e.message);
+    if (currentWorker) {
+      currentWorker.terminate();
+      currentWorker = null;
+    }
+    releaseWorkerUrl();
+    document.getElementById("p6-start").disabled = false;
+    document.getElementById("p6-cancel").disabled = true;
+    document.getElementById("p6-progress-label").textContent = "エラーが発生しました（検索を中断）";
+    document.getElementById("p7-results").innerHTML = '<div class="empty-note">検索中にエラーが発生しました。もう一度「検索開始」を押してください。解消しない場合は、条件を見直してください。</div>';
   };
 
   currentWorker.postMessage({
@@ -2402,11 +2523,20 @@ function startSearch() {
   });
 }
 
+// 実行中Workerに渡したBlob URLを解放する（完了・中止・異常の共通処理）
+function releaseWorkerUrl() {
+  if (currentWorkerUrl) {
+    URL.revokeObjectURL(currentWorkerUrl);
+    currentWorkerUrl = null;
+  }
+}
+
 function cancelSearch() {
   if (currentWorker) {
     currentWorker.terminate();
     currentWorker = null;
   }
+  releaseWorkerUrl();
   document.getElementById("p6-start").disabled = false;
   document.getElementById("p6-cancel").disabled = true;
   document.getElementById("p6-progress-label").textContent = "中止しました";
@@ -2417,8 +2547,6 @@ function cancelSearch() {
    Panel 8: アセン表示2（パーツ構成 + 結果：並び順/件数 + 検索結果一覧）
    Panel 9: 指標表示2
    ========================================================================= */
-let selectedResult = null; // 選択中の検索結果（オブジェクト参照。searchResults/tradeoffResultsどちらの由来でも共通）
-
 function initPanel8Skeleton() {
   const body = document.getElementById("panel7-dynamic");
   body.innerHTML =
@@ -2458,31 +2586,47 @@ function initPanel8Skeleton() {
     "</div>" +
     '<div class="section-note" style="margin-top:8px;">アセン性能が同等で重なった点はまとめてプロットされます。数字はアセンの個数を示します。まとまった点を選択した場合、並び替え順で上位のものを選びます。<br>破線は基準アセン(パネル2)を示します。</div>' +
     "</div>" +
-    '<div class="btn-row" style="margin-top:10px;"><button id="p7-random-btn" disabled>ランダム選択</button></div>';
-  document.getElementById("p7-random-btn").addEventListener("click", pickRandomResult);
+    '<div class="btn-row compact" style="margin-top:10px;">' +
+    '<button class="compact-btn" data-slot-action="save" data-slot="1">AC1保存</button>' +
+    '<button class="compact-btn" data-slot-action="save" data-slot="2">AC2保存</button>' +
+    '<button class="compact-btn" data-slot-action="save" data-slot="3">AC3保存</button>' +
+    "</div>";
   // ソート表示／２軸表示の切替は、パネル9・10と同じ汎用タブ切替ヘルパーを使う（デフォルトはタブ1＝ソート表示）。
   setupTabButtons("p7", 2);
   // ２軸表示（タブ2）は非表示中clientWidthが0のため、表示に切り替えたタイミングで実寸で描画し直す。
   const tab2Btn = document.getElementById("p7-tab-btn-2");
-  if (tab2Btn) tab2Btn.addEventListener("click", () => renderTradeoffViewer(TRADEOFF_INSTANCES.panel7));
+  if (tab2Btn) tab2Btn.addEventListener("click", () => renderTradeoffViewer());
+  // 並べ替え・件数欄のリスナーは、ここで1回だけ登録する（検索のたびに登録すると累積して、操作1回で再描画が検索回数分走る）。
+  const sortKeySel = document.getElementById("p7-sort-key");
+  sortKeySel.addEventListener("change", () => {
+    sortKey = sortKeySel.value;
+    applySortAndDisplay();
+  });
+  const sortDirSel = document.getElementById("p7-sort-dir");
+  sortDirSel.addEventListener("change", () => {
+    sortDir = sortDirSel.value;
+    applySortAndDisplay();
+  });
+  const nInput = document.getElementById("p7-n");
+  nInput.addEventListener("input", () => {
+    let v = parseInt(nInput.value, 10);
+    if (!Number.isFinite(v) || v < 1) return;
+    resultN = v;
+    applySortAndDisplay();
+  });
+  const tradeoffNInput = document.getElementById("p7-tradeoff-n");
+  tradeoffNInput.addEventListener("input", () => {
+    let v = parseInt(tradeoffNInput.value, 10);
+    if (!Number.isFinite(v) || v < 1) return;
+    tradeoffN = v;
+    applySortAndDisplay();
+  });
 }
 
 // パネル7の「検索ヒット件数」表示を更新する
 function updateP7HitCount(text) {
   const el = document.getElementById("p7-hit-count-v");
   if (el) el.textContent = text;
-}
-
-// 条件合致した保持済み全件（heldResults）からランダムに1つ選ぶ。連続で同じ結果にならないよう簡易的に再抽選する。
-let lastRandomIndex = -1;
-function pickRandomResult() {
-  if (!heldResults.length) return;
-  let idx = Math.floor(Math.random() * heldResults.length);
-  if (heldResults.length > 1 && idx === lastRandomIndex) {
-    idx = (idx + 1) % heldResults.length;
-  }
-  lastRandomIndex = idx;
-  selectResult(heldResults[idx]);
 }
 
 function renderResultControls() {
@@ -2497,32 +2641,9 @@ function renderResultControls() {
     sortKeySel.appendChild(opt);
   }
   sortKeySel.value = sortKey;
-  sortKeySel.addEventListener("change", () => {
-    sortKey = sortKeySel.value;
-    applySortAndDisplay();
-  });
-  const sortDirSel = document.getElementById("p7-sort-dir");
-  sortDirSel.value = sortDir;
-  sortDirSel.addEventListener("change", () => {
-    sortDir = sortDirSel.value;
-    applySortAndDisplay();
-  });
-  const nInput = document.getElementById("p7-n");
-  nInput.value = resultN;
-  nInput.addEventListener("input", () => {
-    let v = parseInt(nInput.value, 10);
-    if (!Number.isFinite(v) || v < 1) return;
-    resultN = v;
-    applySortAndDisplay();
-  });
-  const tradeoffNInput = document.getElementById("p7-tradeoff-n");
-  tradeoffNInput.value = tradeoffN;
-  tradeoffNInput.addEventListener("input", () => {
-    let v = parseInt(tradeoffNInput.value, 10);
-    if (!Number.isFinite(v) || v < 1) return;
-    tradeoffN = v;
-    applySortAndDisplay();
-  });
+  document.getElementById("p7-sort-dir").value = sortDir;
+  document.getElementById("p7-n").value = resultN;
+  document.getElementById("p7-tradeoff-n").value = tradeoffN;
 }
 
 /* heldResults（検索条件に合致した保持済み全候補）を、現在の並び順・件数(resultN)で
@@ -2534,7 +2655,7 @@ function applySortAndDisplay() {
     searchResults = [];
     tradeoffResults = [];
     renderResultsGrid();
-    Object.values(TRADEOFF_INSTANCES).forEach((inst) => renderTradeoffViewer(inst));
+    renderTradeoffViewer();
     return;
   }
   const sorted = heldResults.slice().sort((a, b) =>
@@ -2543,24 +2664,20 @@ function applySortAndDisplay() {
   searchResults = sorted.slice(0, resultN);
   tradeoffResults = sorted.slice(0, tradeoffN);
   renderResultsGrid();
-  Object.values(TRADEOFF_INSTANCES).forEach((inst) => renderTradeoffViewer(inst));
+  renderTradeoffViewer();
 }
 
 /* =========================================================================
    トレードオフビューア（デバッグパネル、試験的実装）
    パネル7の２軸表示専用件数(tradeoffN)で絞り込んだtradeoffResultsを描画対象とする。
    ========================================================================= */
-// パネル7の軸選択状態を保持するインスタンス。
-// prefixがDOM要素idの接頭辞（例：prefix="p7-tradeoff" なら #p7-tradeoff-axis-a 等を参照する）。
-// （旧・パネル11のトレードオフビューアは廃止。パネル7に統合済みのため、当時使っていた複数インスタンス管理の
-//   仕組みだけそのまま残し、登録インスタンスをpanel7のみにしている。）
-const TRADEOFF_INSTANCES = {
-  panel7: { prefix: "p7-tradeoff", axisA: "AP", axisB: "姿勢安定性能" },
-};
+// パネル7の２軸表示の状態。prefix は DOM要素idの接頭辞（#p7-tradeoff-axis-a 等を参照する）。
+// axisA・axisB は、初期の軸であると同時に、利用者が軸の選択を変えるたびに更新される現在の軸。
+const tradeoffView = { prefix: "p7-tradeoff", axisA: "AP", axisB: "姿勢安定性能" };
 
-function initTradeoffViewer(inst) {
-  const selA = document.getElementById(inst.prefix + "-axis-a");
-  const selB = document.getElementById(inst.prefix + "-axis-b");
+function initTradeoffViewer() {
+  const selA = document.getElementById(tradeoffView.prefix + "-axis-a");
+  const selB = document.getElementById(tradeoffView.prefix + "-axis-b");
   if (!selA || !selB) return;
   [selA, selB].forEach((sel) => {
     sel.innerHTML = "";
@@ -2571,26 +2688,26 @@ function initTradeoffViewer(inst) {
       sel.appendChild(opt);
     });
   });
-  selA.value = inst.axisA;
-  selB.value = inst.axisB;
+  selA.value = tradeoffView.axisA;
+  selB.value = tradeoffView.axisB;
   selA.addEventListener("change", () => {
-    inst.axisA = selA.value;
-    renderTradeoffViewer(inst);
+    tradeoffView.axisA = selA.value;
+    renderTradeoffViewer();
   });
   selB.addEventListener("change", () => {
-    inst.axisB = selB.value;
-    renderTradeoffViewer(inst);
+    tradeoffView.axisB = selB.value;
+    renderTradeoffViewer();
   });
 }
 
-function renderTradeoffViewer(inst) {
-  const plot = document.getElementById(inst.prefix + "-plot");
+function renderTradeoffViewer() {
+  const plot = document.getElementById(tradeoffView.prefix + "-plot");
   if (!plot) return;
   plot.innerHTML = "";
-  const xLabelMin = document.getElementById(inst.prefix + "-xlabel-min");
-  const xLabelMax = document.getElementById(inst.prefix + "-xlabel-max");
-  const yLabelMin = document.getElementById(inst.prefix + "-ylabel-min");
-  const yLabelMax = document.getElementById(inst.prefix + "-ylabel-max");
+  const xLabelMin = document.getElementById(tradeoffView.prefix + "-xlabel-min");
+  const xLabelMax = document.getElementById(tradeoffView.prefix + "-xlabel-max");
+  const yLabelMin = document.getElementById(tradeoffView.prefix + "-ylabel-min");
+  const yLabelMax = document.getElementById(tradeoffView.prefix + "-ylabel-max");
 
   if (!tradeoffResults.length) {
     plot.innerHTML = '<div class="empty-note" style="padding:8px;">検索結果がありません。</div>';
@@ -2602,21 +2719,21 @@ function renderTradeoffViewer(inst) {
   const baseMetrics = hasBase ? computeAssen(buildParts(assen0Sel)) : null;
 
   // (4-1) 描画範囲（最大・最小）の計算対象に、２軸表示用の結果（tradeoffResults、パネル7の件数指定分）に加えてアセン0も含める
-  const xs = tradeoffResults.map((r) => num(r.metrics[inst.axisA]));
-  const ys = tradeoffResults.map((r) => num(r.metrics[inst.axisB]));
+  const xs = tradeoffResults.map((r) => num(r.metrics[tradeoffView.axisA]));
+  const ys = tradeoffResults.map((r) => num(r.metrics[tradeoffView.axisB]));
   if (baseMetrics) {
-    xs.push(num(baseMetrics[inst.axisA]));
-    ys.push(num(baseMetrics[inst.axisB]));
+    xs.push(num(baseMetrics[tradeoffView.axisA]));
+    ys.push(num(baseMetrics[tradeoffView.axisB]));
   }
   let xMin = Math.min(...xs), xMax = Math.max(...xs);
   let yMin = Math.min(...ys), yMax = Math.max(...ys);
   if (xMin === xMax) { xMin -= 1; xMax += 1; }
   if (yMin === yMax) { yMin -= 1; yMax += 1; }
 
-  xLabelMin.textContent = fmtNum(xMin, APPROX_KEYS.has(inst.axisA));
-  xLabelMax.textContent = fmtNum(xMax, APPROX_KEYS.has(inst.axisA));
-  yLabelMin.textContent = fmtNum(yMin, APPROX_KEYS.has(inst.axisB));
-  yLabelMax.textContent = fmtNum(yMax, APPROX_KEYS.has(inst.axisB));
+  xLabelMin.textContent = fmtNum(xMin, APPROX_KEYS.has(tradeoffView.axisA));
+  xLabelMax.textContent = fmtNum(xMax, APPROX_KEYS.has(tradeoffView.axisA));
+  yLabelMin.textContent = fmtNum(yMin, APPROX_KEYS.has(tradeoffView.axisB));
+  yLabelMax.textContent = fmtNum(yMax, APPROX_KEYS.has(tradeoffView.axisB));
 
   const W = plot.clientWidth || 220;
   const H = plot.clientHeight || 200;
@@ -2626,13 +2743,13 @@ function renderTradeoffViewer(inst) {
   // プロットエリアの上下左右いっぱいに伸びる破線（縦線・横線）として先に描画する。
   // 他の検索結果（丸）より先に描画することで、丸が線の上に重なって見える形になる。
   if (baseMetrics) {
-    const bx = num(baseMetrics[inst.axisA]);
-    const by = num(baseMetrics[inst.axisB]);
+    const bx = num(baseMetrics[tradeoffView.axisA]);
+    const by = num(baseMetrics[tradeoffView.axisB]);
     const bpx = margin + ((bx - xMin) / (xMax - xMin)) * (W - margin * 2);
     const bpy = H - margin - ((by - yMin) / (yMax - yMin)) * (H - margin * 2);
     const baseTitle =
-      "アセン0: " + inst.axisA + "=" + fmtNum(bx, APPROX_KEYS.has(inst.axisA)) + " / " +
-      inst.axisB + "=" + fmtNum(by, APPROX_KEYS.has(inst.axisB));
+      "アセン0: " + tradeoffView.axisA + "=" + fmtNum(bx, APPROX_KEYS.has(tradeoffView.axisA)) + " / " +
+      tradeoffView.axisB + "=" + fmtNum(by, APPROX_KEYS.has(tradeoffView.axisB));
 
     const vLine = document.createElement("div");
     vLine.className = "tradeoff-crosshair tradeoff-crosshair-v";
@@ -2650,8 +2767,8 @@ function renderTradeoffViewer(inst) {
   // 同一位置（7pxグリッド単位）の点をクラスタとしてまとめる（ジッターは行わない）
   const clusters = new Map(); // key -> { indices:[], sumPx, sumPy }
   tradeoffResults.forEach((r, i) => {
-    const x = num(r.metrics[inst.axisA]);
-    const y = num(r.metrics[inst.axisB]);
+    const x = num(r.metrics[tradeoffView.axisA]);
+    const y = num(r.metrics[tradeoffView.axisB]);
     const px = margin + ((x - xMin) / (xMax - xMin)) * (W - margin * 2);
     const py = H - margin - ((y - yMin) / (yMax - yMin)) * (H - margin * 2);
     const key = Math.round(px / 7) + "_" + Math.round(py / 7);
@@ -2676,11 +2793,11 @@ function renderTradeoffViewer(inst) {
       marker.title = c.indices.length + "件のアセンが重なっています。クリックすると並び替え順（パネル7の設定）で上位のものを選択します。";
     } else {
       const r = tradeoffResults[c.indices[0]];
-      const x = num(r.metrics[inst.axisA]);
-      const y = num(r.metrics[inst.axisB]);
+      const x = num(r.metrics[tradeoffView.axisA]);
+      const y = num(r.metrics[tradeoffView.axisB]);
       marker.title =
-        inst.axisA + "=" + fmtNum(x, APPROX_KEYS.has(inst.axisA)) + " / " +
-        inst.axisB + "=" + fmtNum(y, APPROX_KEYS.has(inst.axisB));
+        tradeoffView.axisA + "=" + fmtNum(x, APPROX_KEYS.has(tradeoffView.axisA)) + " / " +
+        tradeoffView.axisB + "=" + fmtNum(y, APPROX_KEYS.has(tradeoffView.axisB));
     }
     if (c.indices.some((idx) => tradeoffResults[idx] === selectedResult)) marker.classList.add("selected");
     marker.addEventListener("click", () => {
@@ -2699,8 +2816,6 @@ function renderTradeoffViewer(inst) {
 
 function renderResultsGrid() {
   const body = document.getElementById("p7-results");
-  const randomBtn = document.getElementById("p7-random-btn");
-  if (randomBtn) randomBtn.disabled = !heldResults.length;
   updateP7HitCount(heldMatchedCount + "件");
   let html = "";
   if (!searchResults.length) {
@@ -2727,8 +2842,6 @@ function renderResultsGrid() {
   selectRank(0);
 }
 
-let currentDisplayedResult = null;
-
 /* 選択中の結果は、インデックスではなく結果オブジェクトの参照(selectedResult)で管理する。
    searchResults(ソート表示用)とtradeoffResults(２軸表示用)は、同じheldResultsをslice()した配列なので、
    同じ結果を指す要素はオブジェクト参照として同一（===で比較可能）。これにより、
@@ -2741,13 +2854,12 @@ function selectResult(r) {
     b.classList.toggle("selected", searchResults[idx] === r);
   });
   // クラスタ化により1マーカーが複数件を代表しうるため、選択状態の反映は再描画で行う
-  Object.values(TRADEOFF_INSTANCES).forEach((inst) => renderTradeoffViewer(inst));
-  currentDisplayedResult = r;
+  renderTradeoffViewer();
   renderPanel7Parts(r);
   renderPanel8(r);
   renderPanel10();
 }
-// 互換用：searchResults内のインデックスを指定して選択する（ランキング一覧・ランダム選択から使用）
+// 互換用：searchResults内のインデックスを指定して選択する（ランキング一覧から使用）
 function selectRank(i) {
   selectResult(searchResults[i]);
 }
@@ -2772,6 +2884,32 @@ function countWarnings(str) {
 // アセン0(基準)とアセンX(検索結果)の指標を左右比較で表示する。
 // 良化(dirに沿って良くなった)は青系統(--diff-good)、悪化は赤系統(--diff-bad)。
 // 表示上の丸め後の値が同じ場合は色を付けない。評価(dir)が未設定の指標も色を付けない。
+// 1指標ぶんの比較セル（基準側・比較側の表示文字列と、良化／悪化のクラス）を返す。パネル8・パネル12で共通。
+function compareCell(d, baseMetrics, targetMetrics) {
+  if (d.isWarning) {
+    const baseCount = countWarnings(baseMetrics[d.k]);
+    const targetCount = countWarnings(targetMetrics[d.k]);
+    let cls = "";
+    if (targetCount < baseCount) cls = "diff-good";
+    else if (targetCount > baseCount) cls = "diff-bad";
+    return { baseStr: baseMetrics[d.k], targetStr: targetMetrics[d.k], cls };
+  }
+  const baseVal = baseMetrics[d.k];
+  const targetVal = targetMetrics[d.k];
+  const baseStr = fmtNum(baseVal, d.approx || d.round);
+  const targetStr = fmtNum(targetVal, d.approx || d.round);
+  let cls = "";
+  if (d.dir === "higher") {
+    if (targetVal > baseVal) cls = "diff-good";
+    else if (targetVal < baseVal) cls = "diff-bad";
+  } else if (d.dir === "lower") {
+    if (targetVal < baseVal) cls = "diff-good";
+    else if (targetVal > baseVal) cls = "diff-bad";
+  }
+  if (baseStr === targetStr) cls = ""; // 表示上の値が同じなら無色にする
+  return { baseStr, targetStr, cls };
+}
+
 function renderComparisonTable(baseMetrics, targetMetrics, order, editable) {
   const handleCell = '<td class="row-drag-handle" draggable="true" title="ドラッグして並べ替え">⋮⋮</td>';
   const rows = (order || DISPLAY_ORDER).map((d) => {
@@ -2782,33 +2920,11 @@ function renderComparisonTable(baseMetrics, targetMetrics, order, editable) {
     }
     const keyAttr = editable ? ' data-key="' + d.k + '"' : "";
     const handle = editable ? handleCell : "";
-    if (d.isWarning) {
-      const baseCount = countWarnings(baseMetrics[d.k]);
-      const targetCount = countWarnings(targetMetrics[d.k]);
-      let cls = "";
-      if (targetCount < baseCount) cls = "diff-good";
-      else if (targetCount > baseCount) cls = "diff-bad";
-      return (
-        "<tr" + keyAttr + ' class="warn-row">' + handle + "<td>" + d.label + '</td><td class="base-val">' + baseMetrics[d.k] +
-        '</td><td class="arrow">→</td><td class="' + cls + '">' + targetMetrics[d.k] + "</td></tr>"
-      );
-    }
-    const baseVal = baseMetrics[d.k];
-    const targetVal = targetMetrics[d.k];
-    const baseStr = fmtNum(baseVal, d.approx || d.round);
-    const targetStr = fmtNum(targetVal, d.approx || d.round);
-    let cls = "";
-    if (d.dir === "higher") {
-      if (targetVal > baseVal) cls = "diff-good";
-      else if (targetVal < baseVal) cls = "diff-bad";
-    } else if (d.dir === "lower") {
-      if (targetVal < baseVal) cls = "diff-good";
-      else if (targetVal > baseVal) cls = "diff-bad";
-    }
-    if (baseStr === targetStr) cls = ""; // 表示上の値が同じなら無色にする
+    const c = compareCell(d, baseMetrics, targetMetrics);
+    const trOpen = d.isWarning ? "<tr" + keyAttr + ' class="warn-row">' : "<tr" + keyAttr + ">";
     return (
-      "<tr" + keyAttr + ">" + handle + "<td>" + d.label + '</td><td class="base-val">' + baseStr +
-      '</td><td class="arrow">→</td><td class="' + cls + '">' + targetStr + "</td></tr>"
+      trOpen + handle + "<td>" + d.label + '</td><td class="base-val">' + c.baseStr +
+      '</td><td class="arrow">→</td><td class="' + c.cls + '">' + c.targetStr + "</td></tr>"
     );
   });
   const cls = "metric-table compare-table" + (editable ? " edit-mode" : "");
@@ -2826,7 +2942,11 @@ function renderPanel8(r) {
     "</div>";
   if (checkAssenRuleViolations(assen0Sel).length) {
     body.innerHTML = controlsHtml + '<div class="empty-note">アセン0（比較の基準）が無効なため比較できません。パネル「アセン表示1」でP1/P3・P2/P4の重複を解消してください。</div>';
+    const btnAEarly = document.getElementById("panel8-disp-a");
+    const btnBEarly = document.getElementById("panel8-disp-b");
     const editBtnEarly = document.getElementById("panel8-edit-toggle");
+    if (btnAEarly) btnAEarly.addEventListener("click", () => { panel8DisplayPattern = "A"; renderPanel8(r); });
+    if (btnBEarly) btnBEarly.addEventListener("click", () => { panel8DisplayPattern = "B"; renderPanel8(r); });
     if (editBtnEarly) editBtnEarly.addEventListener("click", () => { panel8EditMode = !panel8EditMode; renderPanel8(r); });
     return;
   }
@@ -2849,10 +2969,75 @@ function renderPanel8(r) {
   }
 }
 
-/* パネル8「配置編集モード」の行ドラッグ並べ替え（試験実装、D.2参照）。
+/* ---------- パネル12：アセン比較（AC0〜AC3） ---------- */
+
+// 保存スロット（AC1〜AC3）の指標を返す。空のスロット、または無効なアセンのときは null（比較列には数値を出さない）。
+function getSlotMetrics(slotIndex) {
+  const slot = savedAssenSlots[slotIndex];
+  if (!slot || checkAssenRuleViolations(slot.sel).length) return null;
+  return computeAssen(buildParts(slot.sel));
+}
+
+// 指標名＋AC0（パネル2のアセン）＋AC1〜AC3の比較表。色分けは、すべてAC0を基準にする。
+// slotMetricsList の要素が null の列は、数値を表示しない。
+function renderMultiComparisonTable(baseMetrics, slotMetricsList, order, editable) {
+  const handleCell = '<td class="row-drag-handle" draggable="true" title="ドラッグして並べ替え">⋮⋮</td>';
+  const colCount = 2 + slotMetricsList.length + (editable ? 1 : 0);
+  let head = "<tr>" + (editable ? "<th></th>" : "") + "<th>指標</th><th>AC0</th>";
+  slotMetricsList.forEach((m, i) => { head += "<th>AC" + (i + 1) + "</th>"; });
+  head += "</tr>";
+  const rows = (order || DISPLAY_ORDER).map((d) => {
+    if (d.blank) return '<tr class="blank">' + "<td></td>".repeat(colCount) + "</tr>";
+    const keyAttr = editable ? ' data-key="' + d.k + '"' : "";
+    let html = (d.isWarning ? "<tr" + keyAttr + ' class="warn-row">' : "<tr" + keyAttr + ">") + (editable ? handleCell : "");
+    html += "<td>" + d.label + '</td><td class="base-val">' + compareCell(d, baseMetrics, baseMetrics).baseStr + "</td>";
+    for (const m of slotMetricsList) {
+      if (!m) { html += "<td></td>"; continue; }
+      const c = compareCell(d, baseMetrics, m);
+      html += '<td class="' + c.cls + '">' + c.targetStr + "</td>";
+    }
+    return html + "</tr>";
+  });
+  const cls = "metric-table compare-table multi-compare-table" + (editable ? " edit-mode" : "");
+  return '<table class="' + cls + '"><thead>' + head + "</thead><tbody>" + rows.join("") + "</tbody></table>";
+}
+
+function renderPanel12() {
+  const body = document.getElementById("panel12-dynamic");
+  if (!body) return;
+  const controlsHtml =
+    '<div class="btn-row compact">' +
+    '<button class="tab-btn disp-tab-btn' + (panel12DisplayPattern === "A" ? " primary" : "") + '" id="panel12-disp-a">表示A</button>' +
+    '<button class="tab-btn disp-tab-btn' + (panel12DisplayPattern === "B" ? " primary" : "") + '" id="panel12-disp-b">表示B</button>' +
+    '<button class="tab-btn disp-tab-btn' + (panel12EditMode ? " primary" : "") + '" id="panel12-edit-toggle">配置編集</button>' +
+    "</div>";
+  const invalid = checkAssenRuleViolations(assen0Sel).length > 0;
+  let content;
+  if (invalid) {
+    content = '<div class="empty-note">アセン0（比較の基準）が無効なため比較できません。パネル「アセン表示1」でP1/P3・P2/P4の重複を解消してください。</div>';
+  } else {
+    const baseMetrics = computeAssen(buildParts(assen0Sel));
+    const slotMetricsList = [];
+    for (let i = 0; i < SLOT_COUNT; i++) slotMetricsList.push(getSlotMetrics(i));
+    const editNote = panel12EditMode
+      ? '<div class="section-note">ドラッグハンドル（⋮⋮）を掴んで行を並び替えられます。表示A／表示Bでそれぞれ並び順は記憶されます（パネル8とは別に記憶）。</div>'
+      : "";
+    content = editNote + renderMultiComparisonTable(baseMetrics, slotMetricsList, getPanel12Order(panel12DisplayPattern), panel12EditMode);
+  }
+  body.innerHTML = controlsHtml + content;
+  document.getElementById("panel12-disp-a").addEventListener("click", () => { panel12DisplayPattern = "A"; renderPanel12(); });
+  document.getElementById("panel12-disp-b").addEventListener("click", () => { panel12DisplayPattern = "B"; renderPanel12(); });
+  document.getElementById("panel12-edit-toggle").addEventListener("click", () => { panel12EditMode = !panel12EditMode; renderPanel12(); });
+  if (panel12EditMode && !invalid) {
+    const table = body.querySelector("table.compare-table");
+    if (table) initPanel8RowReorder(table, panel12DisplayPattern, panel12CustomOrderKeys);
+  }
+}
+
+/* パネル8・パネル12「配置編集モード」の行ドラッグ並べ替え（試験実装）。
    PC専用・最小限の視覚効果・入れ替え方式（挿入方式ではない）。9.1のパネル並べ替えと同じ設計方針。
-   ドロップ確定のたびにDOM上の現在の行順（data-key）をpanel8CustomOrderKeysへ書き戻す。 */
-function initPanel8RowReorder(table, pattern) {
+   ドロップ確定のたびにDOM上の現在の行順（data-key）を、storeで指定されたカスタム順（既定はpanel8CustomOrderKeys）へ書き戻す。 */
+function initPanel8RowReorder(table, pattern, store = panel8CustomOrderKeys) {
   const tbody = table.tBodies[0];
   if (!tbody) return;
   let dragSrcRow = null;
@@ -2876,7 +3061,7 @@ function initPanel8RowReorder(table, pattern) {
 
   function syncCustomOrder() {
     const keys = Array.from(tbody.querySelectorAll("tr[data-key]")).map((tr) => tr.getAttribute("data-key"));
-    panel8CustomOrderKeys[pattern] = keys;
+    store[pattern] = keys;
   }
 
   tbody.querySelectorAll("td.row-drag-handle").forEach((handle) => {
@@ -2944,7 +3129,6 @@ const hitViewerSel = {
   P7: DATA.categories.P7[0].part_name,
   P11: findPartByShortName("P11", "VE-20B"),
 };
-let panel10Tab = "calc"; // "calc"（被弾試算） | "info"（説明）
 
 // defMetrics: computeAssen()の戻り値（AP・耐弾防御・耐EN防御・耐爆防御・姿勢安定性能を使用）。
 // atk: { p4, p7, p11 } は選択中のパーツオブジェクト（DATA.categories由来）。
@@ -3226,9 +3410,11 @@ function findPartNameByEasyName(cat, easyName) {
   return found ? found.part_name : "";
 }
 
-/* 小数点以下第三位を切り捨てて第二位までにする（例: 0.504865 -> 0.50） */
-function truncate2(x) {
-  return Math.floor(x * 100) / 100;
+/* 小数第2位までの値に 0.01 を足した値を返す（例: 0.57 -> 0.58）。
+   内部で整数（1/100単位）にしてから足す。x + 0.01 を浮動小数点のまま計算すると、
+   0.57 + 0.01 が 0.58 にならず、切り捨てで 0.57 のままになる場合があるため。 */
+function plus001(x) {
+  return (Math.round(x * 100) + 1) / 100;
 }
 
 function applyPreset(i) {
@@ -3240,23 +3426,10 @@ function applyPreset(i) {
     const pn = findPartNameByEasyName(cat, preset.parts[cat]);
     assen0Sel[cat] = pn || DATA.categories[cat][0].part_name;
   }
-  // TANK脚部の場合はP9を（非搭載＝null）に統一する。
   // プリセットデータ側でP9が空欄（"" → 上のfindPartNameByEasyNameがフォールバックし先頭パーツになる）でも、
-  // 逆にP9が誤って指定されていても、P8がTANKかどうかだけを正として強制的に上書きする。
-  if (isTankLeg(getPart("P8", assen0Sel.P8))) {
-    assen0Sel.P9 = null;
-  }
-  lastChangedCat = "P1";
-  renderPanel2();
-  renderPanel3();
-  renderPanel4();
-
-  // 現象2対応: 既に検索結果を選択して比較表示中であれば、
-  // アセン0(比較の基準)が変わったことをパネル9(比較表示)にも反映する
-  if (selectedResult) {
-    renderPanel8(selectedResult);
-  }
-  renderPanel10();
+  // 逆にP9が誤って指定されていても、P8がTANKかどうかだけを正として、refreshAssen0()の中でP9を補正する。
+  // （既に検索結果を選択して比較表示中であれば、パネル8にもアセン0の変更が反映される）
+  refreshAssen0();
 
   // 動作2: パネル5の数値欄をいったん全てリセットし、4項目のみコピー(QBリロード時間・EN補充遅延は+0.01)
   // ※現象1対応: パネル6の組み合わせ数(concat)がこの新しい数値条件を使って計算されるよう、
@@ -3267,9 +3440,9 @@ function applyPreset(i) {
   filterConditions["耐弾防御"].op = "gte";
   filterConditions["耐EN防御"].value = baseMetrics["耐EN防御"];
   filterConditions["耐EN防御"].op = "gte";
-  filterConditions["QBリロード時間実効値"].value = truncate2(baseMetrics["QBリロード時間実効値"] + 0.01);
+  filterConditions["QBリロード時間実効値"].value = plus001(baseMetrics["QBリロード時間実効値"]);
   filterConditions["QBリロード時間実効値"].op = "lte";
-  filterConditions["EN補充遅延"].value = truncate2(baseMetrics["EN補充遅延"] + 0.01);
+  filterConditions["EN補充遅延"].value = plus001(baseMetrics["EN補充遅延"]);
   filterConditions["EN補充遅延"].op = "lte";
   renderPanel5();
 
@@ -3282,6 +3455,15 @@ function applyPreset(i) {
     filterSel[cat] = [];
   });
   renderPanel6();
+}
+
+/* プリセットのプルダウンを「選択なし」に戻す。
+   プリセットの適用後に、パネル2のパーツ変更・スロット読込・共有リンクの復元などでアセン0の状態が変わると、プルダウンの表示が実際の状態と食い違う。
+   また、プルダウンは表示中と同じプリセットを選び直しても切り替えの動作が起きないため、直前に使ったプリセットを再適用できない。
+   アセン0の状態を、プルダウンの操作以外で変えたときに呼ぶ。 */
+function resetPresetSelect() {
+  const sel = document.getElementById("preset-select");
+  if (sel) sel.value = "";
 }
 
 const presetSelect = document.getElementById("preset-select");
@@ -3322,14 +3504,14 @@ setupTabButtons("p9", 4);
 
 // スキーマバージョン。
 // 【重要】以下のいずれかを変更した場合は、必ずこの値をインクリメントすること。
-//   ・PRE_SEARCH_FILTER_INDICATORSの構成・順序（filterConditionsのエンコード順に対応）
-//   ・FILTERABLE_INDICATORSの構成・順序（sortKeyのエンコードに対応）
+//   ・STATE_INDICATOR_KEYSの構成・順序（sortKeyとfilterConditionsのエンコードに対応。画面の並びとは独立）
+//   ・INDICATOR_DEFS_LISTのnoFilter指定（filterConditionsに含める指標の数が変わる）
 //   ・CATSの構成・順序、各カテゴリのビット幅算出ロジック
 //   ・パーツデータ(ac_parts_archive_*.csv)の更新でいずれかのカテゴリのパーツ件数が変わった場合
 //     （カテゴリのビット幅はDATAから実行時に算出しているため、パーツ件数が変わると
 //     　コード変更なしにビット幅が変わってしまう。バージョンを上げないと、
 //     　古いリンクが「読めるが中身が別パーツを指す」壊れ方をしてしまうため要注意）
-// バージョンが一致しない場合は、復元を諦めてデフォルト状態で起動する（8.5・パーツ順序の安定性リスクへの対応方針）。
+// バージョンが一致しない場合は、復元を諦めてデフォルト状態で起動する（パーツ順序の安定性リスクへの対応方針）。
 // v1→v2：アセン指標07.txt反映（新指標4種の追加・パターンA/B/Cの並び順変更）に伴い、
 // PRE_SEARCH_FILTER_INDICATORS・FILTERABLE_INDICATORSの構成・順序が変わったためインクリメント。
 // v2→v3：TANK脚部時のP9（BOOSTER）を（非搭載＝null）に統一する修正に伴い、
@@ -3352,8 +3534,31 @@ for (const cat of CATS) {
 const STATE_FILTER_VALUE_BITS = 25;
 // filterSel（パネル6固定条件）1カテゴリあたりの選択数を表すbit数。127まで表現可能（現行の最大カテゴリ件数108に対応）。
 const STATE_FILTERSEL_COUNT_BITS = 7;
-// sortKeyのインデックスを表すbit数（FILTERABLE_INDICATORSの件数から実行時に算出）
-const STATE_SORT_KEY_BITS = stateBitsFor(FILTERABLE_INDICATORS.length);
+// 【共有リンク用に固定した指標の並び】sortKey と filterConditions のエンコード順は、画面の並び（PATTERN_C_KEYS など）ではなく、この配列で決まる。
+// 画面の並び（パネル5の条件、パネル7の並び替え・２軸表示の選択肢）を変えても、共有リンクは変わらない。
+// 【重要】この配列の既存の並びは変更しないこと（変えると、発行済みの共有リンクが別の指標を指してしまう）。
+// 指標を追加するときは、末尾に足し、STATE_SCHEMA_VERSION をインクリメントすること（画面のパターンC側への追加とは別に必要）。
+const STATE_INDICATOR_KEYS = [
+  "AP", "耐弾防御", "耐EN防御", "耐爆防御", "姿勢安定性能",
+  "安定回復補正", "照準追従性能", "射撃武器適性", "反動制御", "ミサイルロック補正",
+  "ブースト速度", "上昇ブースト速度", "AB速度", "ホバー速度", "QB速度",
+  "QB消費EN実効値", "QBリロード時間実効値", "連続QB回数", "EN容量", "EN供給効率",
+  "EN補充遅延", "供給復元遅延", "復元時補充EN", "EN射撃武器適性", "システム復元性能",
+  "近接武器適性", "重量", "腕部積載合計", "腕部積載上限", "積載重量",
+  "積載上限", "EN負荷", "EN出力実効値", "EN完全回復時間通常", "EN完全回復時間復元",
+  "QB5回回復時間通常", "実弾攻撃許容量", "EN攻撃許容量", "爆発攻撃許容量",
+];
+// filterConditions のエンコード順：上の配列から、検索条件に出さない指標（noFilter）を除いたもの。
+const STATE_FILTER_INDICATORS = STATE_INDICATOR_KEYS.filter((k) => !FILTER_EXCLUDED_KEYS.has(k)).map((k) => INDICATOR_DEFS[k]);
+// 登録漏れの検出：画面側（パターンC）の検索対象指標が、この配列に無いと、共有リンクにその指標が含まれない。
+{
+  const missing = FILTERABLE_INDICATORS.filter((ind) => !STATE_INDICATOR_KEYS.includes(ind.k)).map((ind) => ind.k);
+  const unknown = STATE_INDICATOR_KEYS.filter((k) => !INDICATOR_DEFS[k]);
+  if (missing.length) console.warn("STATE_INDICATOR_KEYS に未登録の指標があります（共有リンクに含まれません）:", missing);
+  if (unknown.length) console.warn("STATE_INDICATOR_KEYS に、指標定義に無いキーがあります:", unknown);
+}
+// sortKeyのインデックスを表すbit数（STATE_INDICATOR_KEYSの件数から実行時に算出）
+const STATE_SORT_KEY_BITS = stateBitsFor(STATE_INDICATOR_KEYS.length);
 
 function makeStateBitWriter() {
   const bits = [];
@@ -3422,8 +3627,8 @@ function serializeState() {
     w.writeBits(idx < 0 ? 0 : idx, STATE_CAT_INDEX_BITS[cat]);
   }
 
-  // ②filterConditions（パネル5、PRE_SEARCH_FILTER_INDICATORS順）
-  for (const ind of PRE_SEARCH_FILTER_INDICATORS) {
+  // ②filterConditions（パネル5、STATE_FILTER_INDICATORS順）
+  for (const ind of STATE_FILTER_INDICATORS) {
     const c = filterConditions[ind.k];
     const has = c && c.value !== null && c.value !== undefined && !isNaN(c.value);
     w.writeBits(has ? 1 : 0, 1);
@@ -3458,7 +3663,7 @@ function serializeState() {
   w.writeBits(allowW3 ? 1 : 0, 1);
 
   // ④sortKey・sortDir（パネル7の並び替え設定。resultNは対象外）
-  const sortKeyIdx = FILTERABLE_INDICATORS.findIndex((ind) => ind.k === sortKey);
+  const sortKeyIdx = STATE_INDICATOR_KEYS.indexOf(sortKey);
   w.writeBits(sortKeyIdx < 0 ? 0 : sortKeyIdx, STATE_SORT_KEY_BITS);
   w.writeBits(sortDir === "asc" ? 1 : 0, 1);
 
@@ -3487,14 +3692,10 @@ function deserializeState(str) {
     assen0Sel2[cat] = DATA.categories[cat][idx].part_name;
   }
   // P8のTANK状態とP9（非搭載）の整合性を強制する（壊れた/矛盾したリンクに対する防御）
-  if (isTankLeg(getPart("P8", assen0Sel2.P8))) {
-    assen0Sel2.P9 = null;
-  } else if (assen0Sel2.P9 === null) {
-    assen0Sel2.P9 = DATA.categories.P9[0].part_name;
-  }
+  normalizeAssen0Sel(assen0Sel2);
 
   const filterConditions2 = {};
-  for (const ind of PRE_SEARCH_FILTER_INDICATORS) {
+  for (const ind of STATE_FILTER_INDICATORS) {
     const has = r.readBits(1) === 1;
     if (has) {
       const op = r.readBits(1) === 1 ? "lte" : "gte";
@@ -3525,17 +3726,12 @@ function deserializeState(str) {
   const allowW2 = r.readBits(1) === 1;
   const allowW3 = r.readBits(1) === 1;
   const sortKeyIdx = r.readBits(STATE_SORT_KEY_BITS);
-  if (sortKeyIdx >= FILTERABLE_INDICATORS.length) throw new Error("sortKeyのindexが範囲外です");
-  const sortKey2 = FILTERABLE_INDICATORS[sortKeyIdx].k;
+  if (sortKeyIdx >= STATE_INDICATOR_KEYS.length) throw new Error("sortKeyのindexが範囲外です");
+  const sortKey2 = STATE_INDICATOR_KEYS[sortKeyIdx];
   const sortDir2 = r.readBits(1) === 1 ? "asc" : "desc";
 
   return { assen0Sel: assen0Sel2, filterConditions: filterConditions2, filterSel: filterSel2, allowW2, allowW3, sortKey: sortKey2, sortDir: sortDir2 };
 }
-
-// renderPanel6()実行前に確定できないDOM値（警告2/3許容セレクト）は、いったんここに保持し、
-// renderPanel6()実行後に反映する。
-let statePendingAllowW2 = null;
-let statePendingAllowW3 = null;
 
 /* 起動時、URLの?sパラメータを読み取り、状態を復元する。
    assen0Sel/filterConditions/filterSelはconst宣言のため、オブジェクトの中身を書き換える形で反映する
@@ -3586,53 +3782,74 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && appModalOverlay && appModalOverlay.style.display !== "none") closeModal();
 });
 
-/* 選択中アセンの一時保存スロット（試験実装、最大2件） */
-const savedAssenSlots = [null, null];
+/* 選択中アセンの一時保存スロット（試験実装、最大3件：AC1〜AC3） */
+const SLOT_COUNT = 3;
+const savedAssenSlots = new Array(SLOT_COUNT).fill(null);
+function slotLabel(slotIndex) { return "AC" + (slotIndex + 1); }
 function saveSelectedResultToSlot(slotIndex) {
   if (!selectedResult) {
     alert("検索結果で選択中のアセンがありません。パネル7の結果一覧、または２軸表示のマーカーからアセンを選択してください。");
     return;
   }
   savedAssenSlots[slotIndex] = { sel: Object.assign({}, selectedResult.sel) };
-  alert("スロット" + (slotIndex + 1) + "に保存しました。");
+  renderPanel12();
+  renderPanel11Parts();
+  alert(slotLabel(slotIndex) + "に保存しました。");
 }
 function loadSlotToPanel2(slotIndex) {
   const slot = savedAssenSlots[slotIndex];
   if (!slot) {
-    alert("スロット" + (slotIndex + 1) + "は空です。先に保存してください。");
+    alert(slotLabel(slotIndex) + "は空です。先に保存してください。");
     return;
   }
   for (const cat of CATS) assen0Sel[cat] = slot.sel[cat];
-  if (isTankLeg(getPart("P8", assen0Sel.P8))) {
-    assen0Sel.P9 = null;
-  }
-  lastChangedCat = "P1";
-  renderPanel2();
-  renderPanel3();
-  renderPanel4();
-  if (selectedResult) {
-    renderPanel8(selectedResult);
-  }
-  renderPanel10();
+  refreshAssen0();
+  resetPresetSelect();
 }
-const p11SlotSave1 = document.getElementById("p11-slot-save-1");
-const p11SlotSave2 = document.getElementById("p11-slot-save-2");
-const p11SlotLoad1 = document.getElementById("p11-slot-load-1");
-const p11SlotLoad2 = document.getElementById("p11-slot-load-2");
-if (p11SlotSave1) p11SlotSave1.addEventListener("click", () => saveSelectedResultToSlot(0));
-if (p11SlotSave2) p11SlotSave2.addEventListener("click", () => saveSelectedResultToSlot(1));
-if (p11SlotLoad1) p11SlotLoad1.addEventListener("click", () => loadSlotToPanel2(0));
-if (p11SlotLoad2) p11SlotLoad2.addEventListener("click", () => loadSlotToPanel2(1));
+// パーツ一覧表の行見出し（半角4文字以内）。
+const PANEL11_ROW_LABEL = {
+  P1: "R-A", P2: "L-A", P3: "R-B", P4: "L-B", P5: "HEAD", P6: "CORE",
+  P7: "ARMS", P8: "LEGS", P9: "BSTR", P10: "FCS", P11: "GENE",
+};
+// パネル11の一覧表：AC0（パネル2のアセン）とAC1〜AC3（保存スロット）のパーツ構成。
+// 未保存のスロットの列は空欄にする。パーツ名は名前表示モード（正式名称／略称／通称）に従う。
+function renderPanel11Parts() {
+  const wrap = document.getElementById("p11-parts");
+  if (!wrap) return;
+  const cols = [assen0Sel].concat(savedAssenSlots.map((slot) => (slot ? slot.sel : null)));
+  let html = '<table class="parts-table" id="p11-parts-table"><thead><tr><th></th>';
+  cols.forEach((c, i) => { html += "<th>AC" + i + "</th>"; });
+  html += "</tr></thead><tbody>";
+  for (const cat of CATS) {
+    html += "<tr><td>" + PANEL11_ROW_LABEL[cat] + "</td>";
+    for (const sel of cols) {
+      let text = "";
+      if (sel) text = sel[cat] ? partDisplayName(getPart(cat, sel[cat])) : "（非搭載）";
+      html += "<td>" + text + "</td>";
+    }
+    html += "</tr>";
+  }
+  wrap.innerHTML = html + "</tbody></table>";
+}
+// スロットのボタンは、data-slot-action（"save"／"load"）と data-slot（1〜SLOT_COUNT）で指定し、
+// document への委譲で処理する。保存ボタンはパネル11とパネル7に置いている。他の場所に同じボタンを置くときは、
+// idを重複させず、この2つの属性を付ければ動く。
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest ? e.target.closest("[data-slot-action]") : null;
+  if (!btn) return;
+  const slotIndex = Number(btn.dataset.slot) - 1;
+  if (!(slotIndex >= 0 && slotIndex < SLOT_COUNT)) return;
+  if (btn.dataset.slotAction === "save") saveSelectedResultToSlot(slotIndex);
+  else if (btn.dataset.slotAction === "load") loadSlotToPanel2(slotIndex);
+});
 
 /* ---------- 初期化 ---------- */
 restoreStateFromUrl();
 
-renderPanel2();
-renderPanel3();
-renderPanel4();
+refreshAssen0();
+resetPresetSelect(); // ブラウザが再読み込みでフォームの値を復元しても、プルダウンを実際の状態（プリセットではない）に合わせる
 renderPanel5();
 renderPanel6();
-renderPanel10();
 if (statePendingAllowW2 !== null || statePendingAllowW3 !== null) {
   const w2 = document.getElementById("warn2-allow");
   const w3 = document.getElementById("warn3-allow");
@@ -3642,10 +3859,8 @@ if (statePendingAllowW2 !== null || statePendingAllowW3 !== null) {
 }
 initPanel8Skeleton();
 
-Object.values(TRADEOFF_INSTANCES).forEach((inst) => {
-  initTradeoffViewer(inst);
-  renderTradeoffViewer(inst);
-});
+initTradeoffViewer();
+renderTradeoffViewer();
 
 /* ---------- パネル並べ替え（試験実装：PC専用・入れ替え方式） ----------
    仕様書Appendix D.2「パネルをつまんで並べ替え」の簡易版。
@@ -3712,8 +3927,11 @@ Object.values(TRADEOFF_INSTANCES).forEach((inst) => {
 })();
 
 
-/* →デフォルトを表示に変更 コメントアウトで対応・本文側の checkedも変更済み */
-document.body.classList.add("hide-panel-intros");
+/* パネル冒頭の説明文（panel-intro）の表示／非表示。
+   初期状態は、HTML側のラジオ（intro-visibility）の checked 指定だけで決まる（現状は「非表示」が checked）。
+   ここでは状態を重ねて指定せず、checked されているラジオの値を body のクラスに反映する。 */
+const introChecked = document.querySelector('input[name="intro-visibility"]:checked');
+document.body.classList.toggle("hide-panel-intros", !!introChecked && introChecked.value === "hide");
 document.querySelectorAll('input[name="intro-visibility"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     document.body.classList.toggle("hide-panel-intros", radio.value === "hide");
